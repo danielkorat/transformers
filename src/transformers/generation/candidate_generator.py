@@ -14,17 +14,30 @@
 # limitations under the License.
 
 import copy
-from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple
+import logging
+from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, Union
 
 import torch
 
 from ..cache_utils import DynamicCache
+from ..tokenization_utils import PreTrainedTokenizer
 from .logits_process import LogitsProcessorList, MinLengthLogitsProcessor
 
 
 if TYPE_CHECKING:
     from ..modeling_utils import PreTrainedModel
+    from ..tokenization_utils_fast import PreTrainedTokenizerFast
     from .configuration_utils import GenerationConfig
+
+
+def convert_token_ids(
+    input_ids: torch.Tensor,
+    src: Union[PreTrainedTokenizer, "PreTrainedTokenizerFast"],
+    dest: Union[PreTrainedTokenizer, "PreTrainedTokenizerFast"],
+):
+    text = src.batch_decode(input_ids, skip_special_tokens=True, clean_up_tokenization_spaces=True)
+    dest_ids = dest(text, add_special_tokens=True, return_tensors="pt")["input_ids"]
+    return dest_ids.to(input_ids.device)
 
 
 class CandidateGenerator:
@@ -97,6 +110,8 @@ class AssistedCandidateGenerator(CandidateGenerator):
         model_kwargs: Dict,
         inputs_tensor: Optional[torch.Tensor] = None,
         logits_processor: "LogitsProcessorList" = None,
+        assistant_tokenizer: Optional[Union[PreTrainedTokenizer, "PreTrainedTokenizerFast"]] = None,
+        target_tokenizer: Optional[Union[PreTrainedTokenizer, "PreTrainedTokenizerFast"]] = None,
     ):
         # Make sure all data at the same device as assistant model
         device = assistant_model.device
@@ -107,6 +122,11 @@ class AssistedCandidateGenerator(CandidateGenerator):
         # Prepare the assistant and the starting number of candidate tokens
         self.assistant_model = assistant_model
         self.num_assistant_tokens = assistant_model.generation_config.num_assistant_tokens
+
+        if assistant_tokenizer != target_tokenizer:
+            self.different_tokenizers = True
+            self.assistant_tokenizer = assistant_tokenizer
+            self.target_tokenizer = target_tokenizer
 
         # Prepare the kwargs for the assistant model
         assistant_kwargs = {}
@@ -167,6 +187,7 @@ class AssistedCandidateGenerator(CandidateGenerator):
                     "Passing `MinLengthLogitsProcessor` when using `assisted_generation is disabled. "
                     "Please pass in `min_length` into `.generate()` instead"
                 )
+        self.prev_tokens = None
 
     def get_candidates(self, input_ids: torch.LongTensor) -> Tuple[torch.LongTensor, Optional[torch.FloatTensor]]:
         """
@@ -183,8 +204,29 @@ class AssistedCandidateGenerator(CandidateGenerator):
         """
         input_ids = input_ids.to(self.assistant_model.device)
 
-        # Don't generate more than `max_length - 1` candidates since the target model generates one extra token.
-        new_cur_len = input_ids.shape[-1]
+        if self.different_tokenizers:
+            # logging.error(f"BEFORE: {input_ids.shape=}")
+            # logging.error(f"BEFORE: {input_ids=}")
+            draft_input_ids = convert_token_ids(input_ids, src=self.target_tokenizer, dest=self.assistant_tokenizer)
+            # logging.error(f"AFTER: {input_ids.shape=}")
+            # logging.error(f"AFTER: {draft_input_ids=}")
+
+            if self.prev_tokens is not None:
+                min_draft_length = min(draft_input_ids.shape[1], self.prev_tokens.shape[1])
+                draft_id_agreement = draft_input_ids[:, :min_draft_length] != self.prev_tokens[:, :min_draft_length]
+                draft_id_agreement_nonzero = draft_id_agreement.nonzero()
+                # dbg()
+                if draft_id_agreement_nonzero.shape[0] > 0:
+                    mistake_index = draft_id_agreement_nonzero[0][1]
+                    draft_input_ids = draft_input_ids[:, : mistake_index + 1]
+
+                new_cur_len = draft_input_ids.shape[-1]
+            else:
+                new_cur_len = draft_input_ids.shape[-1]
+        else:
+            # Don't generate more than `max_length - 1` candidates since the target model generates one extra token.
+            new_cur_len = input_ids.shape[-1]
+
         max_new_tokens = min(int(self.num_assistant_tokens), self.generation_config.max_length - new_cur_len - 1)
         min_new_tokens = max(min(max_new_tokens, self.main_model_min_length - new_cur_len), 0)
         if max_new_tokens == 0:
@@ -206,7 +248,7 @@ class AssistedCandidateGenerator(CandidateGenerator):
 
         # 2. Forecast next N tokens using the assistant model.
         assistant_generation_kwargs = {
-            self.input_ids_key: input_ids,
+            self.input_ids_key: draft_input_ids,
             "min_new_tokens": min_new_tokens,
             "max_new_tokens": max_new_tokens,
             "generation_config": self.generation_config,
@@ -215,13 +257,28 @@ class AssistedCandidateGenerator(CandidateGenerator):
 
         assistant_output = self.assistant_model.generate(**assistant_generation_kwargs, **self.assistant_kwargs)
 
+        # logging.error(f"BEFORE: {assistant_output.sequences=}")
+        # logging.error(f"BEFORE: {assistant_output.sequences.shape=}")
+
+        if self.different_tokenizers:
+            new_target_ids = convert_token_ids(
+                assistant_output.sequences,
+                src=self.assistant_tokenizer,
+                dest=self.target_tokenizer,
+            )
+        else:
+            new_target_ids = assistant_output.sequences
+
+        # logging.error(f"AFTER: {new_target_ids=}")
+        # logging.error(f"AFTER: {new_target_ids.shape=}")
+
         # 3. Update variables for the next round of candidate generation
         self.assistant_kwargs["past_key_values"] = assistant_output.past_key_values
+        self.prev_tokens = assistant_output.sequences
 
         # 4. Prepare variables for output
         candidate_logits = torch.stack(assistant_output.scores, dim=1)
-        candidate_ids = assistant_output.sequences
-        return candidate_ids, candidate_logits
+        return new_target_ids, candidate_logits
 
     def update_candidate_strategy(self, input_ids: torch.LongTensor, scores: torch.FloatTensor, num_matches: int):
         """

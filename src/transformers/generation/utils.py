@@ -42,6 +42,7 @@ from ..models.auto import (
     MODEL_FOR_SPEECH_SEQ_2_SEQ_MAPPING,
     MODEL_FOR_VISION_2_SEQ_MAPPING,
 )
+from ..tokenization_utils import PreTrainedTokenizer
 from ..utils import (
     ModelOutput,
     is_accelerate_available,
@@ -104,6 +105,7 @@ from .stopping_criteria import (
 if TYPE_CHECKING:
     from ..modeling_utils import PreTrainedModel
     from ..tokenization_utils_base import PreTrainedTokenizerBase
+    from ..tokenization_utils_fast import PreTrainedTokenizerFast
     from .streamers import BaseStreamer
 
 logger = logging.get_logger(__name__)
@@ -698,6 +700,8 @@ class GenerationMixin:
         assistant_model: "PreTrainedModel",
         logits_processor: LogitsProcessorList,
         model_kwargs: Dict,
+        assistant_tokenizer: Optional[Union[PreTrainedTokenizer, "PreTrainedTokenizerFast"]] = None,
+        target_tokenizer: Optional[Union[PreTrainedTokenizer, "PreTrainedTokenizerFast"]] = None,
     ) -> CandidateGenerator:
         """
         Returns the candidate generator to be used in `assisted_generation`
@@ -712,6 +716,8 @@ class GenerationMixin:
             candidate_generator = AssistedCandidateGenerator(
                 input_ids=input_ids,
                 assistant_model=assistant_model,
+                assistant_tokenizer=assistant_tokenizer,
+                target_tokenizer=target_tokenizer,
                 generation_config=generation_config,
                 model_kwargs=model_kwargs,
                 inputs_tensor=inputs_tensor,
@@ -1113,7 +1119,7 @@ class GenerationMixin:
                 exception_message += f" Please use one of the following classes instead: {generate_compatible_classes}"
             raise TypeError(exception_message)
 
-    def _validate_assistant(self, assistant_model):
+    def _validate_assistant(self, assistant_model, assistant_tokenizer, target_tokenizer):
         if assistant_model is None:
             return
 
@@ -1129,8 +1135,15 @@ class GenerationMixin:
                     "Ensure you load the assistant with the correct encoder-decoder class, e.g. `AutoModelForSpeechSeq2Seq` for Whisper."
                 )
 
-        if not self.config.vocab_size == assistant_model.config.vocab_size:
-            raise ValueError("Make sure the main and assistant model use the same tokenizer")
+        if (
+            not self.config.vocab_size == assistant_model.config.vocab_size
+            and assistant_tokenizer is None
+            or target_tokenizer is None
+        ):
+            raise ValueError(
+                "Make sure the main and assistant model use the same tokenizer, or, "
+                "alternatively, pass the `target_tokenizer` and `assistant_tokenizer` arguments."
+            )
 
     def _validate_model_kwargs(self, model_kwargs: Dict[str, Any]):
         """Validates model kwargs for generation. Generate argument typos will also be caught here."""
@@ -1489,6 +1502,8 @@ class GenerationMixin:
         prefix_allowed_tokens_fn: Optional[Callable[[int, torch.Tensor], List[int]]] = None,
         synced_gpus: Optional[bool] = None,
         assistant_model: Optional["PreTrainedModel"] = None,
+        assistant_tokenizer: Optional[Union[str, PreTrainedTokenizer, "PreTrainedTokenizerFast"]] = None,
+        target_tokenizer: Optional[Union[str, PreTrainedTokenizer, "PreTrainedTokenizerFast"]] = None,
         streamer: Optional["BaseStreamer"] = None,
         negative_prompt_ids: Optional[torch.Tensor] = None,
         negative_prompt_attention_mask: Optional[torch.Tensor] = None,
@@ -1548,6 +1563,8 @@ class GenerationMixin:
                 same tokenizer. The acceleration is achieved when forecasting candidate tokens with the assistent model
                 is much faster than running generation with the model you're calling generate from. As such, the
                 assistant model should be much smaller.
+            assistant_tokenizer (`PreTrainedTokenizer`, *optional*):
+                The matching tokenizer for the asisstant model, in case this tokenizer differs from the target tokenizer.
             streamer (`BaseStreamer`, *optional*):
                 Streamer object that will be used to stream the generated sequences. Generated tokens are passed
                 through `streamer.put(token_ids)` and the streamer is responsible for any further processing.
@@ -1582,7 +1599,7 @@ class GenerationMixin:
         tokenizer = kwargs.pop("tokenizer", None)  # Pull this out first, we only use it for stopping criteria
         generation_config, model_kwargs = self._prepare_generation_config(generation_config, **kwargs)
         self._validate_model_kwargs(model_kwargs.copy())
-        self._validate_assistant(assistant_model)
+        self._validate_assistant(assistant_model, assistant_tokenizer, target_tokenizer)
 
         # 2. Set generation parameters if not already defined
         if synced_gpus is None:
@@ -1772,6 +1789,8 @@ class GenerationMixin:
                 assistant_model=assistant_model,
                 logits_processor=logits_processor,
                 model_kwargs=model_kwargs,
+                assistant_tokenizer=assistant_tokenizer,
+                target_tokenizer=target_tokenizer,
             )
 
             # 12. prepare logits warper (if `do_sample` is `True`)
