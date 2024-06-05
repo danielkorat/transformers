@@ -15,7 +15,7 @@
 
 import copy
 import logging
-from pdb import set_trace
+import pdb
 from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, Union
 
 import torch
@@ -41,17 +41,31 @@ def convert_token_ids(
     return dest_ids.to(input_ids.device)
 
 
-def get_sub_seq(a, b):
-    for i in range(a.shape[1] - b.shape[1]):
-        if (a[:, i : i + b.shape[1]] == b).all():
-            return i
-    return None
+# def get_sub_seq(a, b):
+#     for i in range(a.shape[1] - b.shape[1]):
+#         if (a[:, i : i + b.shape[1]] == b).all():
+#             return i
+#     return None
 
+
+# def get_only_new_tokens(a, b):
+#     c = get_sub_seq(a, b)
+#     return a[:, c + b.shape[1] :]
+
+def get_sub_seq(a, b):
+    i_agree_max = None
+    agree_max = 0
+    for i in range(a.shape[1] - b.shape[1]):
+        agree_seq = a[:, i : i + b.shape[1]] == b
+        agree = agree_seq.sum()
+        if agree_max < agree:
+            agree_max = agree
+            i_agree_max = i
+    return i_agree_max
 
 def get_only_new_tokens(a, b):
     c = get_sub_seq(a, b)
     return a[:, c + b.shape[1] :]
-
 
 class CandidateGenerator:
     """Abstract base class for all candidate generators that can be applied during assisted generation."""
@@ -221,8 +235,14 @@ class AssistedCandidateGenerator(CandidateGenerator):
             assessed by the model and a `torch.FloatTensor` of shape `(batch_size, candidate_length,
             vocabulary_size)` containing the logits associated to each candidate.
         """
+        # some = torch.tensor([[2, 38182, 3916, 2072, 35, 50118, 1640, 16256, 43, 38, 192, 2434, 9, 10, 7977, 6128, 4, 38, 192, 24, 11, 5, 5963, 12, 196, 6052, 9, 5, 9911, 6, 8, 15, 5, 194, 10527, 11, 823, 457, 5, 247, 4, 38, 192, 24, 11, 3770, 54, 683, 6813, 7, 310, 24, 1522, 19, 42, 8560, 696, 53, 32, 122, 2882, 7, 1968, 49, 559, 5060, 15, 24, 4, 38, 192, 5, 7977, 11, 5, 2473, 9, 17179, 4211, 6, 1433, 11923, 7, 10645, 10, 14934, 88, 42, 4008, 36314, 1538, 232, 6, 54, 32, 12909, 11, 471, 78, 4, 38, 192, 24, 11, 5, 92, 16308, 937, 54, 20177, 414, 2018, 95, 141, 7163, 24, 64, 28, 4, 38, 192, 10, 7977, 11, 5, 15764, 9, 7476, 1791, 4, 286, 5, 78, 86, 10, 1647, 6, 4268, 4234, 4402, 63, 18426, 6, 19, 6791, 207, 3117, 24, 13, 1131, 6216, 4, 7737, 13, 18426, 34, 7408, 365, 332, 11, 5, 375, 367, 107, 1937, 4, 96, 15077, 6, 5, 78, 86, 21452, 553, 5, 864, 59, 18426, 6, 129, 316, 207, 9, 5, 1226, 21, 11, 4402, 4, 38, 192, 10, 7977, 14, 16, 6574, 1104, 2131, 566, 664, 82, 6, 53, 67, 924, 62, 566, 5, 1041, 8, 15198, 11, 127, 1159, 108, 334, 4, 83, 249, 1036, 38, 1145, 11, 2293, 16, 233, 9, 5, 7977, 6, 25, 32, 5, 15136, 9, 5, 1131, 8812, 6, 28132, 12557, 21712, 4, 38, 192, 24, 11, 5, 2419, 9, 205, 1041, 6, 32402, 12653, 49, 1074, 7, 120, 6150, 13, 49, 408, 480, 8, 11, 5, 408, 1235, 6, 215, 25, 5420, 6, 54, 439, 31, 519, 2993, 22107, 10, 186, 7, 95, 65, 50, 80, 10, 353, 4, 166, 216, 24, 351, 75, 6566, 33, 215, 5386, 775, 36, 368, 143, 913, 23, 70, 43, 11, 643, 6, 53, 99, 6150, 473, 116, 38, 192, 42, 1131, 3140, 7977, 11, 6167, 2127, 4, 9103, 18, 22107, 15220, 1131, 3140, 2309, 11, 3090, 479, 3687, 127, 4025, 6, 127, 1484, 8, 127, 964, 4, 38, 33, 190, 450, 5, 7977, 11, 127, 308, 284, 4, 83, 367, 107, 536, 6, 77, 38, 174, 127, 985, 38, 21, 3219, 5, 5674, 13, 10, 6717, 6, 38, 21, 1145, 19, 10, 251, 13787, 4, 22, 448, 41054, 734, 1917, 264, 39217, 11, 10, 457, 8026, 6, 457, 36631, 6645, 6328, 4, 264, 115, 6254, 190, 224, 5, 2136, 8, 69, 1263, 3820, 162, 19, 1403, 12, 417, 38766, 4, 1648, 25, 10, 3831, 313, 6, 3795, 64, 202, 146, 127, 32040, 1004, 1275, 8, 38637, 127, 2123, 19, 10, 881, 2136, 4, 125, 95, 94, 186, 79, 6017, 2294, 1084, 12, 3865, 3697, 1258, 8, 26, 6, 22, 100, 524, 2602, 9, 47, 15, 5, 1086, 3140, 631, 72, 38, 9010, 13, 5, 97, 12604, 7, 1874, 6, 53, 24, 399, 75, 4, 2978, 6, 79, 355, 6, 22, 1185, 1153, 1147, 10, 319, 9, 82, 54, 58, 3606, 72, 38, 218, 75, 206, 52, 56, 655, 56, 10, 1607, 101, 14, 65, 4, 497, 14, 1151, 6, 38, 794, 10, 7977, 14, 64, 836, 47, 7, 6941, 4, 20, 2136, 7977, 6, 606, 31, 5, 5862, 34633, 1182, 1020, 6, 7, 22, 15922, 198, 72, 38, 56, 127, 308, 1004, 198, 10, 891, 9, 107, 536, 6, 8, 23, 5, 86, 24, 21, 10, 20100, 317, 7, 946, 10, 8440, 737, 15, 1131, 3140, 4, 6206, 352, 143, 168, 503, 74, 2854, 7, 2662, 159, 8, 28, 7477, 15, 5, 5674, 4, 1648, 1484, 38, 1834, 7, 58, 11923, 7, 458, 49, 1652, 4, 85, 64, 28, 12792, 6, 38, 2435, 6, 7, 28, 15, 5, 235, 526, 9, 2866, 53, 15, 5, 1593, 526, 9, 14320, 4, 520, 52, 342, 5, 78, 22, 170, 196, 113, 6717, 15, 2384, 11, 830, 1014, 6, 38, 399, 75, 216, 114, 1268, 74, 1183, 84, 76, 3479, 803, 4, 1648, 3007, 6, 38, 399, 75, 190, 216, 114, 51, 74, 575, 4, 1534, 16062, 1030, 11, 110, 194, 116, 1801, 80, 107, 423, 6, 11, 22, 170, 196, 155, 60, 52, 32, 27541, 293, 7, 10, 7977, 11, 455, 7021, 4, 370, 40, 3068, 552, 19, 201, 13, 5, 14131, 9, 5, 78, 24793, 2033, 5154, 892, 15, 5, 304, 9, 3140, 13, 24679, 4, 370, 40, 972, 1484, 215, 25, 4640, 15932, 10197, 6, 41, 9370, 915, 15573, 6, 8, 26405, 2657, 6, 10, 1095, 12, 415, 12, 8361, 3795, 4, 252, 32, 5, 7063, 8, 6167, 2419, 9, 42, 7977, 480, 2793, 6, 1800, 8, 3606, 480, 20656, 7, 3264, 5, 754, 14, 10266, 14255, 12102, 747, 341, 7, 3951, 24679, 64, 28, 3007, 87, 5, 7482, 8364, 1495, 4, 4640, 15932, 10197, 823, 962, 6, 667, 7, 120, 357, 4, 370, 40, 192, 99, 16062, 269, 473, 7, 110, 2900, 6, 11, 16155, 699, 3156, 4, 152, 86, 198, 6, 47, 40, 1798, 31, 5, 3885, 9, 168, 2244, 22623, 352, 3565, 49, 477, 9, 1217, 6, 258, 1557, 8, 1172, 7028, 6, 8, 190, 5, 270, 9, 5, 315, 532, 4, 152, 16, 99, 10, 7977, 1326, 101, 4, 2486, 1131, 3140, 1142, 7173, 479, 520, 22, 170, 196, 132, 35, 20334, 30925, 113, 10843, 11, 494, 777, 6, 2278, 9338, 4434, 16149, 2614, 2047, 5, 235, 82, 58, 2494, 4, 1801, 237, 360, 423, 6, 16149, 2614, 829, 10, 1601, 11, 5, 7107, 37, 56, 57, 2445, 15, 13, 707, 107, 14, 1747, 1286, 752, 2846, 13, 39, 3140, 892, 4, 20, 752, 3380, 147, 16149, 2614, 74, 33, 7, 6925, 39, 3140, 16, 15, 5, 2894, 9, 13393, 4523, 11, 9238, 6, 5750, 4, 96, 14714, 9, 10, 6441, 7977, 6, 5, 931, 9, 557, 12, 8425, 3140, 89, 34, 1130, 389, 12, 12851, 11, 95, 5, 375, 76, 4, 5293, 117, 5021, 6, 52, 33, 2710, 9, 1283, 14, 5, 2846, 8, 323, 9, 5, 752, 168, 64, 1769, 1349, 10, 7977, 23, 10, 3845, 2877, 87, 52, 33, 648, 450, 4, 85, 21, 5, 496, 2534, 9, 404, 34043, 8, 32996, 6514, 34477, 14, 23498, 5, 557, 88, 10, 13306, 13, 17296, 6, 25, 157, 25, 8197, 5, 2504, 9, 580, 22568, 41199, 4, 252, 58, 67, 2149, 13, 5, 6344, 3685, 9, 25193, 13659, 30801, 8, 650, 40682, 4, 1944, 1800, 24793, 4094, 1767, 680, 5, 1050, 27392, 695, 6, 5, 34329, 2444, 3893, 8, 5, 29484, 8029, 11980, 4, 345, 32, 117, 8078, 9, 7721, 147, 5, 752, 168, 34, 57, 10, 24413, 9, 84, 285, 474, 782, 6, 8, 47, 115, 5848, 14, 1131, 3140, 74, 67, 6954, 25, 10, 22057, 915, 4, 158, 6357, 147, 1131, 3140, 115, 33, 913, 479, 345, 16, 122, 6177, 557, 88, 5, 304, 9, 3140, 14, 115, 913, 7281, 9, 1583, 9, 408, 8, 3362, 6, 217, 1416, 13, 1668, 6, 30239, 8, 11520, 18, 6, 7, 766, 10, 367, 4, 590, 6203, 7, 2400, 1937, 6, 3140, 115, 8908, 1888, 5, 1077, 13, 22274, 8, 11586, 7280, 5, 346, 9, 18305, 2400, 30563, 21532, 6, 61, 32, 5, 3968, 1303, 9, 2097, 868, 744, 11, 42, 247, 4, 287, 38, 4005, 420, 31, 12274, 4, 16071, 225, 6452, 11804, 463, 36, 495, 12, 4030, 469, 43, 8, 15405, 14725, 36, 495, 12, 4030, 3123, 238, 38, 1467, 402, 7116, 21, 2909, 4, 252, 58, 3872, 2838, 5, 527, 9, 5420, 20001, 118, 8, 10807, 97, 408, 4, 252, 58, 17977, 124, 5, 414, 52, 56, 1373, 31, 84, 656, 4941, 4, 252, 58, 8935, 3937, 154, 5, 801, 33975, 9, 5, 2195, 6, 8, 70, 9, 14, 21, 137, 5, 1194, 190, 554, 4, 345, 21, 41, 43635, 11465, 59, 106, 6, 8, 51, 2551, 11, 10, 20607, 7, 146, 10, 739, 14368, 11, 3140, 3114, 4, 252, 236, 3140, 7, 28, 5032, 3804, 12841, 4, 252, 236, 24, 122, 4, 252, 236, 3333, 7, 28, 441, 7, 30871, 24, 23, 11790, 4815, 70, 81, 5, 247, 4, 252, 236, 24, 122, 4, 252, 236, 557, 1932, 14313, 62, 7, 892, 5, 2195, 4, 252, 236, 24, 122, 4, 252, 236, 49, 2598, 2648, 23, 5, 194, 8, 632, 672, 7, 9630, 99, 144, 9, 5, 232, 6, 217, 5, 2286, 9, 5, 315, 532, 6, 33, 684, 13, 10, 251, 86, 35, 25249, 16, 10, 6150, 6, 14, 197, 28, 8069, 8, 3032, 101, 143, 97, 6150, 4, 178, 51, 236, 70, 9, 24, 122, 4, 38, 1240, 203, 9, 84, 1194, 4087, 106, 4, 38, 956, 7, 8736, 106, 14, 82, 6, 251, 137, 162, 50, 106, 6, 33, 57, 667, 7, 109, 171, 9, 209, 276, 383, 13, 843, 107, 6, 8, 56, 57, 3946, 358, 86, 4, 38, 9180, 106, 14, 3770, 33, 10, 543, 86, 1298, 1727, 15, 5, 696, 9, 3140, 53, 540, 9600, 2086, 106, 4, 38, 6835, 106, 358, 1149, 9, 5, 169, 4, 22, 713, 86, 40, 28, 430, 60, 14725, 27447, 174, 162, 25, 37, 3203, 66, 9, 5, 929, 4, 1534, 3140, 25, 1522, 25, 480, 50, 8788, 87, 480, 3766, 116, 38, 216, 141, 1365, 24, 16, 109, 1085, 142, 38, 222, 1085, 13, 350, 251, 4, 4624, 10, 205, 356, 23, 5, 414, 6, 11427, 2512, 8, 1067, 7, 5, 1484, 6, 54, 32, 747, 66, 9, 1735, 8, 465, 49, 1034, 11, 5, 1026, 9, 10, 2007, 2195, 4, 24446, 4395, 75, 185, 10, 737, 4, 85, 817, 1472, 4, 35671, 9866, 16, 8453, 4, 125, 6, 23, 103, 477, 6, 490, 1142, 109, 120, 7173, 4, 497, 103, 477, 6, 14883, 743, 109, 120, 8179, 4, 497, 103, 477, 6, 1537, 1472, 21720, 11791, 4, 407, 6, 259, 24, 16, 35, 166, 197, 25150, 1131, 3140, 4, 166, 197, 109, 24, 9852, 4, 178, 6, 52, 197, 109, 24, 122, 4, 361, 383, 7, 216, 59, 1030, 4728, 479, 50118, 47977, 35, 50118, 1640, 16256, 43, 20, 18426, 9, 1131, 3140, 11, 5, 315, 532, 34, 57, 10, 251, 12, 18536, 8, 4456, 696, 13, 1724, 4, 125, 5, 2625, 34, 57, 59, 549, 24, 197, 28, 1030, 50, 2439, 4, 20, 2625, 34, 57, 59, 549, 24, 197, 28, 22363, 50, 2439, 4, 20, 2625, 34, 57, 59, 549, 24, 197, 28, 22363, 50, 2439, 4, 20, 2625, 34, 57, 59, 549, 24, 197, 28, 22363, 50, 2439, 4, 50118, 133, 2625, 34, 57, 59, 549, 24, 197, 28, 22363, 50, 2439, 4, 50118, 133, 2625, 34, 57, 59, 549, 24, 197]])
+        # if not (some[:,:input_ids.shape[1]].cpu() == input_ids.cpu()).all():
+        #     pdb.set_trace()
+        optimized = self.assistant_model.config.optimized
+        # logging.error(f"{optimized=}")
         input_ids = input_ids.to(self.assistant_model.device)
-
+        # logging.error(f"{input_ids.shape[1]=}")
+        
         if self.different_tokenizers:
             convert_kwargs = {"src": self.target_tokenizer, "dest": self.assistant_tokenizer}
 
@@ -233,20 +253,18 @@ class AssistedCandidateGenerator(CandidateGenerator):
                 new_cur_len = draft_input_ids.shape[-1]
             else:                
                 # input_ids contains all target prompt input ids and some new target input ids
-
-                logging.error("Optimized")
-                num_prev_target = self.prev_target_ids.shape[1]
-                target_lookbehind = min(self.target_lookbehind, input_ids.shape[1])
-                new_draft_ids = convert_token_ids(
-                    input_ids[:, num_prev_target - target_lookbehind:], **convert_kwargs
-                )
-                prev_draft_ids_tail = self.prev_draft_ids[:, -self.draft_lookbehind:]
-                new_draft_input_ids = get_only_new_tokens(new_draft_ids, prev_draft_ids_tail)
-                draft_input_ids = torch.cat([self.prev_draft_ids, new_draft_input_ids], dim=-1)
-
-                # # Non-optimized
-                # draft_input_ids = convert_token_ids(input_ids, **convert_kwargs)
-                # logging.error("Non-optimized")
+                if optimized and self.prev_target_ids.shape[1] > 20:
+                    num_prev_target = self.prev_target_ids.shape[1]
+                    target_lookbehind = min(self.target_lookbehind, input_ids.shape[1])
+                    new_draft_ids = convert_token_ids(
+                        input_ids[:, num_prev_target - target_lookbehind:], **convert_kwargs
+                    )
+                    draft_lookbehind_actual = min(new_draft_ids.shape[1] - 1, self.draft_lookbehind)
+                    prev_draft_ids_tail = self.prev_draft_ids[:, -draft_lookbehind_actual:]
+                    new_draft_input_ids = get_only_new_tokens(new_draft_ids, prev_draft_ids_tail)
+                    draft_input_ids = torch.cat([self.prev_draft_ids, new_draft_input_ids], dim=-1)
+                else:
+                    draft_input_ids = convert_token_ids(input_ids, **convert_kwargs)
 
                 min_draft_length = min(draft_input_ids.shape[1], self.prev_tokens.shape[1])
                 draft_id_agreement = draft_input_ids[:, :min_draft_length] != self.prev_tokens[:, :min_draft_length]
@@ -257,6 +275,7 @@ class AssistedCandidateGenerator(CandidateGenerator):
                     draft_input_ids = draft_input_ids[:, : mistake_index + 1]
 
                 new_cur_len = draft_input_ids.shape[-1]
+            # logging.error(f"{self.prev_target_ids.shape[1]=}")
         else:
             # Don't generate more than `max_length - 1` candidates since the target model generates one extra token.
             new_cur_len = input_ids.shape[-1]
@@ -295,14 +314,36 @@ class AssistedCandidateGenerator(CandidateGenerator):
         assistant_output = self.assistant_model.generate(**assistant_generation_kwargs, **self.assistant_kwargs)
 
         if self.different_tokenizers:
-            new_target_ids = convert_token_ids(
-                assistant_output.sequences,
-                src=self.assistant_tokenizer,
-                dest=self.target_tokenizer,
-            )
+            run_optimized = optimized and self.prev_draft_ids.shape[1] > 20
+            if run_optimized:
+                num_prev_draft = self.prev_draft_ids.shape[1]
+                draft_lookbehind = min(self.draft_lookbehind, input_ids.shape[1])
+                new_target_ids_from_window = convert_token_ids(
+                    assistant_output.sequences[:, num_prev_draft - draft_lookbehind:],
+                    src=self.assistant_tokenizer,
+                    dest=self.target_tokenizer,
+                )
+                target_lookbehind_actual = min(new_target_ids_from_window.shape[1] - 1, self.target_lookbehind)
+                # prev_target_ids_tail = self.prev_target_ids[:, -target_lookbehind_actual:]
+                prev_target_ids_tail = input_ids[:, -target_lookbehind_actual:]
+                new_target_input_ids = get_only_new_tokens(new_target_ids_from_window, prev_target_ids_tail)
+                # new_target_ids = torch.cat([self.prev_target_ids, new_target_input_ids], dim=-1)
+                new_target_ids = torch.cat([input_ids, new_target_input_ids], dim=-1)
 
+            else:
+                new_target_ids = convert_token_ids(
+                    assistant_output.sequences,
+                    src=self.assistant_tokenizer,
+                    dest=self.target_tokenizer,
+                )
+                # new_target_ids = torch.cat([self.prev_target_ids, 
+                #                             new_target_ids[:, self.prev_target_ids.shape[1]:]], dim=1)
+                
+                new_target_ids = torch.cat([input_ids, new_target_ids[:, input_ids.shape[1]:]], dim=1)
         else:
             new_target_ids = assistant_output.sequences
+        # logging.error(f"{new_target_ids=}")
+        # logging.error("===============\n")
 
         # 3. Update variables for the next round of candidate generation
         self.assistant_kwargs["past_key_values"] = assistant_output.past_key_values
@@ -310,8 +351,9 @@ class AssistedCandidateGenerator(CandidateGenerator):
 
         # 4. Prepare variables for output
         candidate_logits = torch.stack(assistant_output.scores, dim=1)
-        new_target_ids = torch.cat([self.prev_target_ids, new_target_ids[:, self.prev_target_ids.shape[1]:]], dim=1)
 
+        # if not (some[:,:1655].cpu() == new_target_ids[:,:1655].cpu()).all():
+        #     pdb.set_trace()
         return new_target_ids, candidate_logits
 
     def update_candidate_strategy(self, input_ids: torch.LongTensor, scores: torch.FloatTensor, num_matches: int):
