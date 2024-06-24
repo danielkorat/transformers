@@ -16,7 +16,6 @@
 
 import copy
 import inspect
-import pdb
 import warnings
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, Union
@@ -118,15 +117,6 @@ if is_accelerate_available():
 NEED_SETUP_CACHE_CLASSES_MAPPING = {"static": StaticCache, "sliding_window": SlidingWindowCache}
 QUANT_BACKEND_CLASSES_MAPPING = {"quanto": QuantoQuantizedCache, "HQQ": HQQQuantizedCache}
 
-def convert_token_ids(
-    input_ids,
-    src,
-    dest,
-):
-    text = src.batch_decode(input_ids, skip_special_tokens=True, clean_up_tokenization_spaces=True)
-    dest_ids = dest(text, add_special_tokens=True, return_tensors="pt")["input_ids"]
-    return dest_ids.to(input_ids.device)
-
 
 def get_sub_seq(a, b):
     i_agree_max = None
@@ -179,14 +169,26 @@ class AssistedCandidateGeneratorDifferentTokenizers(AssistedCandidateGenerator):
         self.prev_tokens = None
         self.target_lookbehind = 50
         self.draft_lookbehind = 50
+        self.num_converted = []
         
+    def convert_token_ids(
+        self,
+        input_ids,
+        src,
+        dest,
+    ):
+        text = src.batch_decode(input_ids, skip_special_tokens=True, clean_up_tokenization_spaces=True)
+        dest_ids = dest(text, add_special_tokens=True, return_tensors="pt")["input_ids"]
+        self.num_converted.append(input_ids.shape[1])
+        return dest_ids.to(input_ids.device)
+
     def get_candidates(self, input_ids: torch.LongTensor, stopping_criteria) -> Tuple[torch.LongTensor, Optional[torch.FloatTensor]]:
         optimized = self.assistant_model.config.optimized
         input_ids = input_ids.to(self.assistant_model.device)
         convert_kwargs = {"src": self.target_tokenizer, "dest": self.assistant_tokenizer}
 
         if self.prev_tokens is None:
-            draft_input_ids = convert_token_ids(input_ids, **convert_kwargs)
+            draft_input_ids = self.convert_token_ids(input_ids, **convert_kwargs)
             self.prev_target_ids = input_ids
             self.prev_draft_ids = draft_input_ids
             new_cur_len = draft_input_ids.shape[-1]
@@ -198,7 +200,7 @@ class AssistedCandidateGeneratorDifferentTokenizers(AssistedCandidateGenerator):
 
                 start_index_in_target_window = num_prev_target - num_new_valid_target_tokens - self.target_lookbehind
                 
-                new_draft_ids = convert_token_ids(
+                new_draft_ids = self.convert_token_ids(
                     input_ids[:,  start_index_in_target_window:], **convert_kwargs
                 )
                 new_valid_draft_ids = get_new_tokens_slide(self.prev_draft_ids, new_draft_ids)
@@ -207,7 +209,7 @@ class AssistedCandidateGeneratorDifferentTokenizers(AssistedCandidateGenerator):
                 draft_input_ids = torch.cat([self.prev_draft_ids, new_valid_draft_ids], dim=-1)
                 self.prev_draft_ids = draft_input_ids
             else:
-                draft_input_ids = convert_token_ids(input_ids, **convert_kwargs)
+                draft_input_ids = self.convert_token_ids(input_ids, **convert_kwargs)
 
             new_cur_len = draft_input_ids.shape[-1]
         
@@ -247,7 +249,7 @@ class AssistedCandidateGeneratorDifferentTokenizers(AssistedCandidateGenerator):
         start_draft_look_index = num_prev_draft - self.draft_lookbehind
         run_optimized = optimized and start_draft_look_index > 0
         if run_optimized:
-            new_target_ids_from_window = convert_token_ids(
+            new_target_ids_from_window = self.convert_token_ids(
                 assistant_output.sequences[:, start_draft_look_index:],
                 src=self.assistant_tokenizer,
                 dest=self.target_tokenizer,
@@ -256,7 +258,7 @@ class AssistedCandidateGeneratorDifferentTokenizers(AssistedCandidateGenerator):
             new_target_ids = torch.cat([input_ids, new_target_tokens_check], dim=-1)
             self.prev_target_ids = input_ids
         else:
-            new_target_ids = convert_token_ids(
+            new_target_ids = self.convert_token_ids(
                 assistant_output.sequences,
                 src=self.assistant_tokenizer,
                 dest=self.target_tokenizer,
@@ -3710,7 +3712,8 @@ class GenerationMixin:
         batch_size = input_ids.shape[0]
         unfinished_sequences = torch.ones(batch_size, dtype=torch.long, device=input_ids.device)
         model_kwargs = self._get_initial_cache_position(input_ids, model_kwargs)
-
+        self.num_converted_tokens = []
+        
         last_valid_length = input_ids.shape[-1]
         this_peer_finished = False
         while self._has_unfinished_sequences(this_peer_finished, synced_gpus, device=input_ids.device):
@@ -3718,6 +3721,10 @@ class GenerationMixin:
 
             #  1. Fetch candidate sequences from a `CandidateGenerator`
             candidate_input_ids, candidate_logits = candidate_generator.get_candidates(input_ids, stopping_criteria)
+            
+            if hasattr(candidate_generator, "num_converted") and len(candidate_generator.num_converted) > 0:
+                self.num_converted_tokens.extend(candidate_generator.num_converted)
+            
             candidate_input_ids = candidate_input_ids.to(self.device)
             if candidate_logits is not None:
                 candidate_logits = candidate_logits.to(self.device)
