@@ -150,7 +150,8 @@ def get_new_tokens_slide(full_seq_prompt, new_d):
     d_agree_sum_index = None
     for i in range(new_d.shape[1]):
         new_d_short = new_d[:,:new_d.shape[1]-i]
-        d_agree = new_d_short == full_seq_prompt[:,-new_d_short.shape[1]:]
+        last_prompt_tokens_size = min(new_d_short.shape[1], full_seq_prompt.shape[1])
+        d_agree = new_d_short[:,:last_prompt_tokens_size] == full_seq_prompt[:,-last_prompt_tokens_size:]
         d_agree_sum = d_agree.sum()
         if d_agree_sum > d_agree_sum_max:
             d_agree_sum_max = d_agree_sum
@@ -176,9 +177,8 @@ class AssistedCandidateGeneratorDifferentTokenizers(AssistedCandidateGenerator):
         self.assistant_tokenizer = assistant_tokenizer
         self.target_tokenizer = target_tokenizer
         self.prev_tokens = None
-        self.target_lookbehind = 30
-        self.draft_lookbehind = 30
-        self.different_tokenizers = True
+        self.target_lookbehind = 50
+        self.draft_lookbehind = 50
         
     def get_candidates(self, input_ids: torch.LongTensor, stopping_criteria) -> Tuple[torch.LongTensor, Optional[torch.FloatTensor]]:
         optimized = self.assistant_model.config.optimized
@@ -867,11 +867,13 @@ class GenerationMixin:
         assistant_model: "PreTrainedModel",
         logits_processor,
         model_kwargs: Dict,
+        assistant_tokenizer,
+        target_tokenizer,
     ) -> CandidateGenerator:
         """
         Returns the candidate generator to be used in `assisted_generation`
         """
-        different_tokenizers = True
+        different_tokenizers = self.config.vocab_size != assistant_model.config.vocab_size
 
         if generation_config.prompt_lookup_num_tokens is not None:
             candidate_generator = PromptLookupCandidateGenerator(
@@ -887,6 +889,8 @@ class GenerationMixin:
                 model_kwargs=model_kwargs,
                 inputs_tensor=inputs_tensor,
                 logits_processor=logits_processor,
+                assistant_tokenizer=assistant_tokenizer,
+                target_tokenizer=target_tokenizer,
             )
         else:
             candidate_generator = AssistedCandidateGenerator(

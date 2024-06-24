@@ -301,7 +301,11 @@ class GenerationConfig(PushToHubMixin):
             The number of tokens to be output as candidate tokens.
         max_matching_ngram_size (`int`, *optional*, default to `None`):
             The maximum ngram size to be considered for matching in the prompt. Default to 2 if not provided.
-
+        target_tokenizer (`PreTrainedTokenizer`, *optional*, default to `None`)
+            The target tokenizer to be used for assistant generation when the target and assistant tokenizers are different.
+        assistant_tokenizer (`PreTrainedTokenizer`, *optional*, default to `None`)
+            The assistant tokenizer to be used for assistant generation when the target and assistant tokenizers are different.
+            
         > Parameters specific to the caching mechanism:
 
         cache_implementation (`str`, *optional*, default to `None`):
@@ -390,7 +394,9 @@ class GenerationConfig(PushToHubMixin):
         # Assistant generation
         self.num_assistant_tokens = kwargs.pop("num_assistant_tokens", 5)
         self.num_assistant_tokens_schedule = kwargs.pop("num_assistant_tokens_schedule", "heuristic")
-
+        self.target_tokenizer = kwargs.pop("target_tokenizer", None)
+        self.assistant_tokenizer = kwargs.pop("assistant_tokenizer", None)
+        
         # Cache implementation
         self.cache_implementation = kwargs.pop("cache_implementation", None)
         self.cache_config = kwargs.pop("cache_config", None)
