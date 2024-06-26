@@ -16,6 +16,7 @@
 
 import copy
 import inspect
+from time import perf_counter
 import warnings
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, Union
@@ -177,9 +178,11 @@ class AssistedCandidateGeneratorDifferentTokenizers(AssistedCandidateGenerator):
         src,
         dest,
     ):
+        t = perf_counter()
         text = src.batch_decode(input_ids, skip_special_tokens=True, clean_up_tokenization_spaces=True)
         dest_ids = dest(text, add_special_tokens=True, return_tensors="pt")["input_ids"]
-        self.num_converted.append(input_ids.shape[1])
+        conversion_time = (perf_counter() - t) * 1000
+        self.num_converted.append({"num_tokens": input_ids.shape[1], "conversion_time": conversion_time})
         return dest_ids.to(input_ids.device)
 
     def get_candidates(self, input_ids: torch.LongTensor, stopping_criteria) -> Tuple[torch.LongTensor, Optional[torch.FloatTensor]]:
@@ -194,11 +197,18 @@ class AssistedCandidateGeneratorDifferentTokenizers(AssistedCandidateGenerator):
             new_cur_len = draft_input_ids.shape[-1]
         else:                
             # input_ids contains all target prompt input ids and some new target input ids
-            if optimized and input_ids.shape[1] > self.target_lookbehind:
-                num_prev_target = input_ids.shape[1]
-                num_new_valid_target_tokens = num_prev_target - self.prev_target_ids.shape[1]
+            if optimized and self.prev_target_ids.shape[1] > self.target_lookbehind:
+                # num_prev_target = input_ids.shape[1]
+                
+                # num_new_valid_target_tokens = num_prev_target - self.prev_target_ids.shape[1]
 
-                start_index_in_target_window = num_prev_target - num_new_valid_target_tokens - self.target_lookbehind
+                # number_of_tokens_until_the_new_ones = num_prev_target - num_new_valid_target_tokens
+                
+                # target_lookbehind = min(self.target_lookbehind, number_of_tokens_until_the_new_ones)
+                
+                start_index_in_target_window = self.prev_target_ids.shape[1] - self.target_lookbehind
+                
+                assert start_index_in_target_window >= 0
                 
                 new_draft_ids = self.convert_token_ids(
                     input_ids[:,  start_index_in_target_window:], **convert_kwargs
@@ -3712,7 +3722,6 @@ class GenerationMixin:
         batch_size = input_ids.shape[0]
         unfinished_sequences = torch.ones(batch_size, dtype=torch.long, device=input_ids.device)
         model_kwargs = self._get_initial_cache_position(input_ids, model_kwargs)
-        self.num_converted_tokens = []
         
         last_valid_length = input_ids.shape[-1]
         this_peer_finished = False
