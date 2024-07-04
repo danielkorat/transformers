@@ -170,7 +170,7 @@ class AssistedCandidateGeneratorDifferentTokenizers(AssistedCandidateGenerator):
         self.prev_tokens = None
         self.target_lookbehind = 50
         self.draft_lookbehind = 50
-        self.num_converted = []
+        self.token_conversions = []
         
     def convert_token_ids(
         self,
@@ -181,8 +181,8 @@ class AssistedCandidateGeneratorDifferentTokenizers(AssistedCandidateGenerator):
         t = perf_counter()
         text = src.batch_decode(input_ids, skip_special_tokens=True, clean_up_tokenization_spaces=True)
         dest_ids = dest(text, add_special_tokens=True, return_tensors="pt")["input_ids"]
-        conversion_time = (perf_counter() - t) * 1000
-        self.num_converted.append({"num_tokens": input_ids.shape[1], "conversion_time": conversion_time})
+        conversion_time = (perf_counter() - t)
+        self.token_conversions.append({"num_tokens": input_ids.shape[1], "conversion_time": conversion_time})
         return dest_ids.to(input_ids.device)
 
     def get_candidates(self, input_ids: torch.LongTensor, stopping_criteria) -> Tuple[torch.LongTensor, Optional[torch.FloatTensor]]:
@@ -3731,8 +3731,8 @@ class GenerationMixin:
             #  1. Fetch candidate sequences from a `CandidateGenerator`
             candidate_input_ids, candidate_logits = candidate_generator.get_candidates(input_ids, stopping_criteria)
             
-            if hasattr(candidate_generator, "num_converted") and len(candidate_generator.num_converted) > 0:
-                self.num_converted_tokens.extend(candidate_generator.num_converted)
+            if hasattr(candidate_generator, "token_conversions") and len(candidate_generator.token_conversions) > 0:
+                self.token_conversions.extend(candidate_generator.token_conversions)
             
             candidate_input_ids = candidate_input_ids.to(self.device)
             if candidate_logits is not None:
