@@ -134,7 +134,7 @@ def get_sub_seq(a, b):
 
 
 def get_only_new_tokens(a, b):
-    c = get_sub_seq(a, b)``
+    c = get_sub_seq(a, b)
     return a[:, c + b.shape[1]:]
 
 
