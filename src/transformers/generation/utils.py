@@ -112,6 +112,8 @@ if TYPE_CHECKING:
 
 logger = logging.get_logger(__name__)
 
+import logging as pylog
+
 if is_accelerate_available():
     from accelerate.hooks import AlignDevicesHook, add_hook_to_module
 
@@ -132,11 +134,13 @@ def get_sub_seq(a, b):
 
 
 def get_only_new_tokens(a, b):
-    c = get_sub_seq(a, b)
+    c = get_sub_seq(a, b)``
     return a[:, c + b.shape[1]:]
 
 
 def get_new_tokens_slide(full_seq_prompt, new_d):
+    pylog.error(f"{full_seq_prompt=}")
+    pylog.error(f"{new_d=}")
     d_agree_sum_max = 0
     d_agree_sum_index = None
     for i in range(new_d.shape[1]):
@@ -213,6 +217,8 @@ class AssistedCandidateGeneratorDifferentTokenizers(AssistedCandidateGenerator):
                 new_draft_ids = self.convert_token_ids(
                     input_ids[:,  start_index_in_target_window:], **convert_kwargs
                 )
+                pylog.error(f"{start_index_in_target_window=}")
+                pylog.error(f"{input_ids.shape[1]=}")
                 new_valid_draft_ids = get_new_tokens_slide(self.prev_draft_ids, new_draft_ids)
                 
                 # new_draft_input_ids = get_only_new_tokens(new_draft_ids, prev_draft_ids_tail)
