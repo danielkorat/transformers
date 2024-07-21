@@ -1365,9 +1365,8 @@ class GenerationMixin:
                 )
 
         if (
-            not self.config.vocab_size == assistant_model.config.vocab_size
+            self.config.vocab_size != assistant_model.config.vocab_size
             and assistant_tokenizer is None
-            or target_tokenizer is None
         ):
             raise ValueError(
                 "Make sure the main and assistant model use the same tokenizer, or, "

@@ -222,7 +222,7 @@ class AssistedCandidateGenerator(CandidateGenerator):
         self.target_lookbehind = 10
         self.draft_lookbehind = 10
 
-    def get_candidates(self, input_ids: torch.LongTensor) -> Tuple[torch.LongTensor, Optional[torch.FloatTensor]]:
+    def get_candidates(self, input_ids: torch.LongTensor, stopping_criteria=None) -> Tuple[torch.LongTensor, Optional[torch.FloatTensor]]:
         """
         Fetches the candidates to be tried for the current input.
 
