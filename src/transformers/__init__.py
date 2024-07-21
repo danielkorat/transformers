@@ -18,7 +18,7 @@
 # to defer the actual importing for when the objects are requested. This way `import transformers` provides the names
 # in the namespace without actually importing anything (and especially none of the backends).
 
-__version__ = "4.42.0.dev0"
+__version__ = "4.43.0.dev0"
 
 from typing import TYPE_CHECKING
 
@@ -249,6 +249,11 @@ _import_structure = {
         "CanineConfig",
         "CanineTokenizer",
     ],
+    "models.chameleon": [
+        "ChameleonConfig",
+        "ChameleonProcessor",
+        "ChameleonVQVAEConfig",
+    ],
     "models.chinese_clip": [
         "ChineseCLIPConfig",
         "ChineseCLIPProcessor",
@@ -321,16 +326,43 @@ _import_structure = {
     "models.deit": ["DeiTConfig"],
     "models.deprecated": [],
     "models.deprecated.bort": [],
+    "models.deprecated.deta": ["DetaConfig"],
+    "models.deprecated.efficientformer": ["EfficientFormerConfig"],
+    "models.deprecated.ernie_m": ["ErnieMConfig"],
+    "models.deprecated.gptsan_japanese": [
+        "GPTSanJapaneseConfig",
+        "GPTSanJapaneseTokenizer",
+    ],
+    "models.deprecated.graphormer": ["GraphormerConfig"],
+    "models.deprecated.jukebox": [
+        "JukeboxConfig",
+        "JukeboxPriorConfig",
+        "JukeboxTokenizer",
+        "JukeboxVQVAEConfig",
+    ],
     "models.deprecated.mctct": [
         "MCTCTConfig",
         "MCTCTFeatureExtractor",
         "MCTCTProcessor",
     ],
+    "models.deprecated.mega": ["MegaConfig"],
     "models.deprecated.mmbt": ["MMBTConfig"],
+    "models.deprecated.nat": ["NatConfig"],
+    "models.deprecated.nezha": ["NezhaConfig"],
     "models.deprecated.open_llama": ["OpenLlamaConfig"],
+    "models.deprecated.qdqbert": ["QDQBertConfig"],
+    "models.deprecated.realm": [
+        "RealmConfig",
+        "RealmTokenizer",
+    ],
     "models.deprecated.retribert": [
         "RetriBertConfig",
         "RetriBertTokenizer",
+    ],
+    "models.deprecated.speech_to_text_2": [
+        "Speech2Text2Config",
+        "Speech2Text2Processor",
+        "Speech2Text2Tokenizer",
     ],
     "models.deprecated.tapex": ["TapexTokenizer"],
     "models.deprecated.trajectory_transformer": ["TrajectoryTransformerConfig"],
@@ -339,9 +371,15 @@ _import_structure = {
         "TransfoXLCorpus",
         "TransfoXLTokenizer",
     ],
+    "models.deprecated.tvlt": [
+        "TvltConfig",
+        "TvltFeatureExtractor",
+        "TvltProcessor",
+    ],
     "models.deprecated.van": ["VanConfig"],
+    "models.deprecated.vit_hybrid": ["ViTHybridConfig"],
+    "models.deprecated.xlm_prophetnet": ["XLMProphetNetConfig"],
     "models.depth_anything": ["DepthAnythingConfig"],
-    "models.deta": ["DetaConfig"],
     "models.detr": ["DetrConfig"],
     "models.dialogpt": [],
     "models.dinat": ["DinatConfig"],
@@ -363,7 +401,6 @@ _import_structure = {
         "DPRReaderTokenizer",
     ],
     "models.dpt": ["DPTConfig"],
-    "models.efficientformer": ["EfficientFormerConfig"],
     "models.efficientnet": ["EfficientNetConfig"],
     "models.electra": [
         "ElectraConfig",
@@ -375,7 +412,6 @@ _import_structure = {
     ],
     "models.encoder_decoder": ["EncoderDecoderConfig"],
     "models.ernie": ["ErnieConfig"],
-    "models.ernie_m": ["ErnieMConfig"],
     "models.esm": ["EsmConfig", "EsmTokenizer"],
     "models.falcon": ["FalconConfig"],
     "models.fastspeech2_conformer": [
@@ -404,6 +440,7 @@ _import_structure = {
     ],
     "models.fuyu": ["FuyuConfig"],
     "models.gemma": ["GemmaConfig"],
+    "models.gemma2": ["Gemma2Config"],
     "models.git": [
         "GitConfig",
         "GitProcessor",
@@ -420,11 +457,6 @@ _import_structure = {
     "models.gpt_neox_japanese": ["GPTNeoXJapaneseConfig"],
     "models.gpt_sw3": [],
     "models.gptj": ["GPTJConfig"],
-    "models.gptsan_japanese": [
-        "GPTSanJapaneseConfig",
-        "GPTSanJapaneseTokenizer",
-    ],
-    "models.graphormer": ["GraphormerConfig"],
     "models.grounding_dino": [
         "GroundingDinoConfig",
         "GroundingDinoProcessor",
@@ -435,6 +467,7 @@ _import_structure = {
         "GroupViTVisionConfig",
     ],
     "models.herbert": ["HerbertTokenizer"],
+    "models.hiera": ["HieraConfig"],
     "models.hubert": ["HubertConfig"],
     "models.ibert": ["IBertConfig"],
     "models.idefics": ["IdeficsConfig"],
@@ -447,14 +480,14 @@ _import_structure = {
         "InstructBlipQFormerConfig",
         "InstructBlipVisionConfig",
     ],
+    "models.instructblipvideo": [
+        "InstructBlipVideoConfig",
+        "InstructBlipVideoProcessor",
+        "InstructBlipVideoQFormerConfig",
+        "InstructBlipVideoVisionConfig",
+    ],
     "models.jamba": ["JambaConfig"],
     "models.jetmoe": ["JetMoeConfig"],
-    "models.jukebox": [
-        "JukeboxConfig",
-        "JukeboxPriorConfig",
-        "JukeboxTokenizer",
-        "JukeboxVQVAEConfig",
-    ],
     "models.kosmos2": [
         "Kosmos2Config",
         "Kosmos2Processor",
@@ -490,6 +523,10 @@ _import_structure = {
         "LlavaNextConfig",
         "LlavaNextProcessor",
     ],
+    "models.llava_next_video": [
+        "LlavaNextVideoConfig",
+        "LlavaNextVideoProcessor",
+    ],
     "models.longformer": [
         "LongformerConfig",
         "LongformerTokenizer",
@@ -519,7 +556,6 @@ _import_structure = {
     ],
     "models.mbart": ["MBartConfig"],
     "models.mbart50": [],
-    "models.mega": ["MegaConfig"],
     "models.megatron_bert": ["MegatronBertConfig"],
     "models.megatron_gpt2": [],
     "models.mgp_str": [
@@ -554,8 +590,6 @@ _import_structure = {
         "MusicgenMelodyDecoderConfig",
     ],
     "models.mvp": ["MvpConfig", "MvpTokenizer"],
-    "models.nat": ["NatConfig"],
-    "models.nezha": ["NezhaConfig"],
     "models.nllb": [],
     "models.nllb_moe": ["NllbMoeConfig"],
     "models.nougat": ["NougatProcessor"],
@@ -613,17 +647,12 @@ _import_structure = {
     ],
     "models.pvt": ["PvtConfig"],
     "models.pvt_v2": ["PvtV2Config"],
-    "models.qdqbert": ["QDQBertConfig"],
     "models.qwen2": [
         "Qwen2Config",
         "Qwen2Tokenizer",
     ],
     "models.qwen2_moe": ["Qwen2MoeConfig"],
     "models.rag": ["RagConfig", "RagRetriever", "RagTokenizer"],
-    "models.realm": [
-        "RealmConfig",
-        "RealmTokenizer",
-    ],
     "models.recurrent_gemma": ["RecurrentGemmaConfig"],
     "models.reformer": ["ReformerConfig"],
     "models.regnet": ["RegNetConfig"],
@@ -642,6 +671,7 @@ _import_structure = {
         "RoFormerConfig",
         "RoFormerTokenizer",
     ],
+    "models.rt_detr": ["RTDetrConfig", "RTDetrResNetConfig"],
     "models.rwkv": ["RwkvConfig"],
     "models.sam": [
         "SamConfig",
@@ -671,11 +701,6 @@ _import_structure = {
         "Speech2TextConfig",
         "Speech2TextFeatureExtractor",
         "Speech2TextProcessor",
-    ],
-    "models.speech_to_text_2": [
-        "Speech2Text2Config",
-        "Speech2Text2Processor",
-        "Speech2Text2Tokenizer",
     ],
     "models.speecht5": [
         "SpeechT5Config",
@@ -712,11 +737,6 @@ _import_structure = {
         "TrOCRConfig",
         "TrOCRProcessor",
     ],
-    "models.tvlt": [
-        "TvltConfig",
-        "TvltFeatureExtractor",
-        "TvltProcessor",
-    ],
     "models.tvp": [
         "TvpConfig",
         "TvpProcessor",
@@ -749,7 +769,6 @@ _import_structure = {
     ],
     "models.visual_bert": ["VisualBertConfig"],
     "models.vit": ["ViTConfig"],
-    "models.vit_hybrid": ["ViTHybridConfig"],
     "models.vit_mae": ["ViTMAEConfig"],
     "models.vit_msn": ["ViTMSNConfig"],
     "models.vitdet": ["VitDetConfig"],
@@ -788,19 +807,17 @@ _import_structure = {
     ],
     "models.xglm": ["XGLMConfig"],
     "models.xlm": ["XLMConfig", "XLMTokenizer"],
-    "models.xlm_prophetnet": ["XLMProphetNetConfig"],
     "models.xlm_roberta": ["XLMRobertaConfig"],
     "models.xlm_roberta_xl": ["XLMRobertaXLConfig"],
     "models.xlnet": ["XLNetConfig"],
     "models.xmod": ["XmodConfig"],
     "models.yolos": ["YolosConfig"],
     "models.yoso": ["YosoConfig"],
+    "models.zoedepth": ["ZoeDepthConfig"],
     "onnx": [],
     "pipelines": [
         "AudioClassificationPipeline",
         "AutomaticSpeechRecognitionPipeline",
-        "Conversation",
-        "ConversationalPipeline",
         "CsvPipelineDataFormat",
         "DepthEstimationPipeline",
         "DocumentQuestionAnsweringPipeline",
@@ -943,7 +960,8 @@ else:
     _import_structure["models.code_llama"].append("CodeLlamaTokenizer")
     _import_structure["models.cpm"].append("CpmTokenizer")
     _import_structure["models.deberta_v2"].append("DebertaV2Tokenizer")
-    _import_structure["models.ernie_m"].append("ErnieMTokenizer")
+    _import_structure["models.deprecated.ernie_m"].append("ErnieMTokenizer")
+    _import_structure["models.deprecated.xlm_prophetnet"].append("XLMProphetNetTokenizer")
     _import_structure["models.fnet"].append("FNetTokenizer")
     _import_structure["models.gemma"].append("GemmaTokenizer")
     _import_structure["models.gpt_sw3"].append("GPTSw3Tokenizer")
@@ -967,7 +985,6 @@ else:
     _import_structure["models.t5"].append("T5Tokenizer")
     _import_structure["models.udop"].append("UdopTokenizer")
     _import_structure["models.xglm"].append("XGLMTokenizer")
-    _import_structure["models.xlm_prophetnet"].append("XLMProphetNetTokenizer")
     _import_structure["models.xlm_roberta"].append("XLMRobertaTokenizer")
     _import_structure["models.xlnet"].append("XLNetTokenizer")
 
@@ -1000,6 +1017,7 @@ else:
     _import_structure["models.cpm"].append("CpmTokenizerFast")
     _import_structure["models.deberta"].append("DebertaTokenizerFast")
     _import_structure["models.deberta_v2"].append("DebertaV2TokenizerFast")
+    _import_structure["models.deprecated.realm"].append("RealmTokenizerFast")
     _import_structure["models.deprecated.retribert"].append("RetriBertTokenizerFast")
     _import_structure["models.distilbert"].append("DistilBertTokenizerFast")
     _import_structure["models.dpr"].extend(
@@ -1037,7 +1055,6 @@ else:
     _import_structure["models.openai"].append("OpenAIGPTTokenizerFast")
     _import_structure["models.pegasus"].append("PegasusTokenizerFast")
     _import_structure["models.qwen2"].append("Qwen2TokenizerFast")
-    _import_structure["models.realm"].append("RealmTokenizerFast")
     _import_structure["models.reformer"].append("ReformerTokenizerFast")
     _import_structure["models.rembert"].append("RemBertTokenizerFast")
     _import_structure["models.roberta"].append("RobertaTokenizerFast")
@@ -1106,12 +1123,14 @@ except OptionalDependencyNotAvailable:
         name for name in dir(dummy_vision_objects) if not name.startswith("_")
     ]
 else:
-    _import_structure["image_processing_utils"] = ["ImageProcessingMixin"]
+    _import_structure["image_processing_base"] = ["ImageProcessingMixin"]
+    _import_structure["image_processing_utils"] = ["BaseImageProcessor"]
     _import_structure["image_utils"] = ["ImageFeatureExtractionMixin"]
     _import_structure["models.beit"].extend(["BeitFeatureExtractor", "BeitImageProcessor"])
     _import_structure["models.bit"].extend(["BitImageProcessor"])
     _import_structure["models.blip"].extend(["BlipImageProcessor"])
     _import_structure["models.bridgetower"].append("BridgeTowerImageProcessor")
+    _import_structure["models.chameleon"].append("ChameleonImageProcessor")
     _import_structure["models.chinese_clip"].extend(["ChineseCLIPFeatureExtractor", "ChineseCLIPImageProcessor"])
     _import_structure["models.clip"].extend(["CLIPFeatureExtractor", "CLIPImageProcessor"])
     _import_structure["models.conditional_detr"].extend(
@@ -1122,11 +1141,13 @@ else:
         ["DeformableDetrFeatureExtractor", "DeformableDetrImageProcessor"]
     )
     _import_structure["models.deit"].extend(["DeiTFeatureExtractor", "DeiTImageProcessor"])
-    _import_structure["models.deta"].append("DetaImageProcessor")
+    _import_structure["models.deprecated.deta"].append("DetaImageProcessor")
+    _import_structure["models.deprecated.efficientformer"].append("EfficientFormerImageProcessor")
+    _import_structure["models.deprecated.tvlt"].append("TvltImageProcessor")
+    _import_structure["models.deprecated.vit_hybrid"].extend(["ViTHybridImageProcessor"])
     _import_structure["models.detr"].extend(["DetrFeatureExtractor", "DetrImageProcessor"])
     _import_structure["models.donut"].extend(["DonutFeatureExtractor", "DonutImageProcessor"])
     _import_structure["models.dpt"].extend(["DPTFeatureExtractor", "DPTImageProcessor"])
-    _import_structure["models.efficientformer"].append("EfficientFormerImageProcessor")
     _import_structure["models.efficientnet"].append("EfficientNetImageProcessor")
     _import_structure["models.flava"].extend(["FlavaFeatureExtractor", "FlavaImageProcessor", "FlavaProcessor"])
     _import_structure["models.fuyu"].extend(["FuyuImageProcessor", "FuyuProcessor"])
@@ -1135,10 +1156,12 @@ else:
     _import_structure["models.idefics"].extend(["IdeficsImageProcessor"])
     _import_structure["models.idefics2"].extend(["Idefics2ImageProcessor"])
     _import_structure["models.imagegpt"].extend(["ImageGPTFeatureExtractor", "ImageGPTImageProcessor"])
+    _import_structure["models.instructblipvideo"].extend(["InstructBlipVideoImageProcessor"])
     _import_structure["models.layoutlmv2"].extend(["LayoutLMv2FeatureExtractor", "LayoutLMv2ImageProcessor"])
     _import_structure["models.layoutlmv3"].extend(["LayoutLMv3FeatureExtractor", "LayoutLMv3ImageProcessor"])
     _import_structure["models.levit"].extend(["LevitFeatureExtractor", "LevitImageProcessor"])
     _import_structure["models.llava_next"].append("LlavaNextImageProcessor")
+    _import_structure["models.llava_next_video"].append("LlavaNextVideoImageProcessor")
     _import_structure["models.mask2former"].append("Mask2FormerImageProcessor")
     _import_structure["models.maskformer"].extend(["MaskFormerFeatureExtractor", "MaskFormerImageProcessor"])
     _import_structure["models.mobilenet_v1"].extend(["MobileNetV1FeatureExtractor", "MobileNetV1ImageProcessor"])
@@ -1152,23 +1175,35 @@ else:
     _import_structure["models.pix2struct"].extend(["Pix2StructImageProcessor"])
     _import_structure["models.poolformer"].extend(["PoolFormerFeatureExtractor", "PoolFormerImageProcessor"])
     _import_structure["models.pvt"].extend(["PvtImageProcessor"])
+    _import_structure["models.rt_detr"].extend(["RTDetrImageProcessor"])
     _import_structure["models.sam"].extend(["SamImageProcessor"])
     _import_structure["models.segformer"].extend(["SegformerFeatureExtractor", "SegformerImageProcessor"])
     _import_structure["models.seggpt"].extend(["SegGptImageProcessor"])
     _import_structure["models.siglip"].append("SiglipImageProcessor")
     _import_structure["models.superpoint"].extend(["SuperPointImageProcessor"])
     _import_structure["models.swin2sr"].append("Swin2SRImageProcessor")
-    _import_structure["models.tvlt"].append("TvltImageProcessor")
     _import_structure["models.tvp"].append("TvpImageProcessor")
     _import_structure["models.video_llava"].append("VideoLlavaImageProcessor")
     _import_structure["models.videomae"].extend(["VideoMAEFeatureExtractor", "VideoMAEImageProcessor"])
     _import_structure["models.vilt"].extend(["ViltFeatureExtractor", "ViltImageProcessor", "ViltProcessor"])
     _import_structure["models.vit"].extend(["ViTFeatureExtractor", "ViTImageProcessor"])
-    _import_structure["models.vit_hybrid"].extend(["ViTHybridImageProcessor"])
     _import_structure["models.vitmatte"].append("VitMatteImageProcessor")
     _import_structure["models.vivit"].append("VivitImageProcessor")
     _import_structure["models.yolos"].extend(["YolosFeatureExtractor", "YolosImageProcessor"])
+    _import_structure["models.zoedepth"].append("ZoeDepthImageProcessor")
 
+try:
+    if not is_torchvision_available():
+        raise OptionalDependencyNotAvailable()
+except OptionalDependencyNotAvailable:
+    from .utils import dummy_torchvision_objects
+
+    _import_structure["utils.dummy_torchvision_objects"] = [
+        name for name in dir(dummy_torchvision_objects) if not name.startswith("_")
+    ]
+else:
+    _import_structure["image_processing_utils_fast"] = ["BaseImageProcessorFast"]
+    _import_structure["models.vit"].append("ViTImageProcessorFast")
 
 # PyTorch-backed objects
 try:
@@ -1186,6 +1221,7 @@ else:
         "Cache",
         "CacheConfig",
         "DynamicCache",
+        "EncoderDecoderCache",
         "HQQQuantizedCache",
         "QuantizedCache",
         "QuantizedCacheConfig",
@@ -1256,6 +1292,7 @@ else:
             "WhisperTimeStampLogitsProcessor",
         ]
     )
+    _import_structure["modeling_flash_attention_utils"] = []
     _import_structure["modeling_outputs"] = []
     _import_structure["modeling_utils"] = ["PreTrainedModel"]
 
@@ -1577,6 +1614,15 @@ else:
             "load_tf_weights_in_canine",
         ]
     )
+    _import_structure["models.chameleon"].extend(
+        [
+            "ChameleonForConditionalGeneration",
+            "ChameleonModel",
+            "ChameleonPreTrainedModel",
+            "ChameleonProcessor",
+            "ChameleonVQVAE",
+        ]
+    )
     _import_structure["models.chinese_clip"].extend(
         [
             "ChineseCLIPModel",
@@ -1767,6 +1813,54 @@ else:
             "DeiTPreTrainedModel",
         ]
     )
+    _import_structure["models.deprecated.deta"].extend(
+        [
+            "DetaForObjectDetection",
+            "DetaModel",
+            "DetaPreTrainedModel",
+        ]
+    )
+    _import_structure["models.deprecated.efficientformer"].extend(
+        [
+            "EfficientFormerForImageClassification",
+            "EfficientFormerForImageClassificationWithTeacher",
+            "EfficientFormerModel",
+            "EfficientFormerPreTrainedModel",
+        ]
+    )
+    _import_structure["models.deprecated.ernie_m"].extend(
+        [
+            "ErnieMForInformationExtraction",
+            "ErnieMForMultipleChoice",
+            "ErnieMForQuestionAnswering",
+            "ErnieMForSequenceClassification",
+            "ErnieMForTokenClassification",
+            "ErnieMModel",
+            "ErnieMPreTrainedModel",
+        ]
+    )
+    _import_structure["models.deprecated.gptsan_japanese"].extend(
+        [
+            "GPTSanJapaneseForConditionalGeneration",
+            "GPTSanJapaneseModel",
+            "GPTSanJapanesePreTrainedModel",
+        ]
+    )
+    _import_structure["models.deprecated.graphormer"].extend(
+        [
+            "GraphormerForGraphClassification",
+            "GraphormerModel",
+            "GraphormerPreTrainedModel",
+        ]
+    )
+    _import_structure["models.deprecated.jukebox"].extend(
+        [
+            "JukeboxModel",
+            "JukeboxPreTrainedModel",
+            "JukeboxPrior",
+            "JukeboxVQVAE",
+        ]
+    )
     _import_structure["models.deprecated.mctct"].extend(
         [
             "MCTCTForCTC",
@@ -1774,7 +1868,40 @@ else:
             "MCTCTPreTrainedModel",
         ]
     )
+    _import_structure["models.deprecated.mega"].extend(
+        [
+            "MegaForCausalLM",
+            "MegaForMaskedLM",
+            "MegaForMultipleChoice",
+            "MegaForQuestionAnswering",
+            "MegaForSequenceClassification",
+            "MegaForTokenClassification",
+            "MegaModel",
+            "MegaPreTrainedModel",
+        ]
+    )
     _import_structure["models.deprecated.mmbt"].extend(["MMBTForClassification", "MMBTModel", "ModalEmbeddings"])
+    _import_structure["models.deprecated.nat"].extend(
+        [
+            "NatBackbone",
+            "NatForImageClassification",
+            "NatModel",
+            "NatPreTrainedModel",
+        ]
+    )
+    _import_structure["models.deprecated.nezha"].extend(
+        [
+            "NezhaForMaskedLM",
+            "NezhaForMultipleChoice",
+            "NezhaForNextSentencePrediction",
+            "NezhaForPreTraining",
+            "NezhaForQuestionAnswering",
+            "NezhaForSequenceClassification",
+            "NezhaForTokenClassification",
+            "NezhaModel",
+            "NezhaPreTrainedModel",
+        ]
+    )
     _import_structure["models.deprecated.open_llama"].extend(
         [
             "OpenLlamaForCausalLM",
@@ -1783,11 +1910,41 @@ else:
             "OpenLlamaPreTrainedModel",
         ]
     )
+    _import_structure["models.deprecated.qdqbert"].extend(
+        [
+            "QDQBertForMaskedLM",
+            "QDQBertForMultipleChoice",
+            "QDQBertForNextSentencePrediction",
+            "QDQBertForQuestionAnswering",
+            "QDQBertForSequenceClassification",
+            "QDQBertForTokenClassification",
+            "QDQBertLayer",
+            "QDQBertLMHeadModel",
+            "QDQBertModel",
+            "QDQBertPreTrainedModel",
+            "load_tf_weights_in_qdqbert",
+        ]
+    )
+    _import_structure["models.deprecated.realm"].extend(
+        [
+            "RealmEmbedder",
+            "RealmForOpenQA",
+            "RealmKnowledgeAugEncoder",
+            "RealmPreTrainedModel",
+            "RealmReader",
+            "RealmRetriever",
+            "RealmScorer",
+            "load_tf_weights_in_realm",
+        ]
+    )
     _import_structure["models.deprecated.retribert"].extend(
         [
             "RetriBertModel",
             "RetriBertPreTrainedModel",
         ]
+    )
+    _import_structure["models.deprecated.speech_to_text_2"].extend(
+        ["Speech2Text2ForCausalLM", "Speech2Text2PreTrainedModel"]
     )
     _import_structure["models.deprecated.trajectory_transformer"].extend(
         [
@@ -1805,6 +1962,14 @@ else:
             "load_tf_weights_in_transfo_xl",
         ]
     )
+    _import_structure["models.deprecated.tvlt"].extend(
+        [
+            "TvltForAudioVisualClassification",
+            "TvltForPreTraining",
+            "TvltModel",
+            "TvltPreTrainedModel",
+        ]
+    )
     _import_structure["models.deprecated.van"].extend(
         [
             "VanForImageClassification",
@@ -1812,17 +1977,27 @@ else:
             "VanPreTrainedModel",
         ]
     )
+    _import_structure["models.deprecated.vit_hybrid"].extend(
+        [
+            "ViTHybridForImageClassification",
+            "ViTHybridModel",
+            "ViTHybridPreTrainedModel",
+        ]
+    )
+    _import_structure["models.deprecated.xlm_prophetnet"].extend(
+        [
+            "XLMProphetNetDecoder",
+            "XLMProphetNetEncoder",
+            "XLMProphetNetForCausalLM",
+            "XLMProphetNetForConditionalGeneration",
+            "XLMProphetNetModel",
+            "XLMProphetNetPreTrainedModel",
+        ]
+    )
     _import_structure["models.depth_anything"].extend(
         [
             "DepthAnythingForDepthEstimation",
             "DepthAnythingPreTrainedModel",
-        ]
-    )
-    _import_structure["models.deta"].extend(
-        [
-            "DetaForObjectDetection",
-            "DetaModel",
-            "DetaPreTrainedModel",
         ]
     )
     _import_structure["models.detr"].extend(
@@ -1885,14 +2060,6 @@ else:
             "DPTPreTrainedModel",
         ]
     )
-    _import_structure["models.efficientformer"].extend(
-        [
-            "EfficientFormerForImageClassification",
-            "EfficientFormerForImageClassificationWithTeacher",
-            "EfficientFormerModel",
-            "EfficientFormerPreTrainedModel",
-        ]
-    )
     _import_structure["models.efficientnet"].extend(
         [
             "EfficientNetForImageClassification",
@@ -1933,17 +2100,6 @@ else:
             "ErnieForTokenClassification",
             "ErnieModel",
             "ErniePreTrainedModel",
-        ]
-    )
-    _import_structure["models.ernie_m"].extend(
-        [
-            "ErnieMForInformationExtraction",
-            "ErnieMForMultipleChoice",
-            "ErnieMForQuestionAnswering",
-            "ErnieMForSequenceClassification",
-            "ErnieMForTokenClassification",
-            "ErnieMModel",
-            "ErnieMPreTrainedModel",
         ]
     )
     _import_structure["models.esm"].extend(
@@ -2046,6 +2202,15 @@ else:
             "GemmaPreTrainedModel",
         ]
     )
+    _import_structure["models.gemma2"].extend(
+        [
+            "Gemma2ForCausalLM",
+            "Gemma2ForSequenceClassification",
+            "Gemma2ForTokenClassification",
+            "Gemma2Model",
+            "Gemma2PreTrainedModel",
+        ]
+    )
     _import_structure["models.git"].extend(
         [
             "GitForCausalLM",
@@ -2121,20 +2286,6 @@ else:
             "GPTJPreTrainedModel",
         ]
     )
-    _import_structure["models.gptsan_japanese"].extend(
-        [
-            "GPTSanJapaneseForConditionalGeneration",
-            "GPTSanJapaneseModel",
-            "GPTSanJapanesePreTrainedModel",
-        ]
-    )
-    _import_structure["models.graphormer"].extend(
-        [
-            "GraphormerForGraphClassification",
-            "GraphormerModel",
-            "GraphormerPreTrainedModel",
-        ]
-    )
     _import_structure["models.grounding_dino"].extend(
         [
             "GroundingDinoForObjectDetection",
@@ -2148,6 +2299,15 @@ else:
             "GroupViTPreTrainedModel",
             "GroupViTTextModel",
             "GroupViTVisionModel",
+        ]
+    )
+    _import_structure["models.hiera"].extend(
+        [
+            "HieraBackbone",
+            "HieraForImageClassification",
+            "HieraForPreTraining",
+            "HieraModel",
+            "HieraPreTrainedModel",
         ]
     )
     _import_structure["models.hubert"].extend(
@@ -2209,6 +2369,14 @@ else:
             "InstructBlipVisionModel",
         ]
     )
+    _import_structure["models.instructblipvideo"].extend(
+        [
+            "InstructBlipVideoForConditionalGeneration",
+            "InstructBlipVideoPreTrainedModel",
+            "InstructBlipVideoQFormerModel",
+            "InstructBlipVideoVisionModel",
+        ]
+    )
     _import_structure["models.jamba"].extend(
         [
             "JambaForCausalLM",
@@ -2223,14 +2391,6 @@ else:
             "JetMoeForSequenceClassification",
             "JetMoeModel",
             "JetMoePreTrainedModel",
-        ]
-    )
-    _import_structure["models.jukebox"].extend(
-        [
-            "JukeboxModel",
-            "JukeboxPreTrainedModel",
-            "JukeboxPrior",
-            "JukeboxVQVAE",
         ]
     )
     _import_structure["models.kosmos2"].extend(
@@ -2314,6 +2474,12 @@ else:
         [
             "LlavaNextForConditionalGeneration",
             "LlavaNextPreTrainedModel",
+        ]
+    )
+    _import_structure["models.llava_next_video"].extend(
+        [
+            "LlavaNextVideoForConditionalGeneration",
+            "LlavaNextVideoPreTrainedModel",
         ]
     )
     _import_structure["models.longformer"].extend(
@@ -2408,18 +2574,6 @@ else:
             "MBartForSequenceClassification",
             "MBartModel",
             "MBartPreTrainedModel",
-        ]
-    )
-    _import_structure["models.mega"].extend(
-        [
-            "MegaForCausalLM",
-            "MegaForMaskedLM",
-            "MegaForMultipleChoice",
-            "MegaForQuestionAnswering",
-            "MegaForSequenceClassification",
-            "MegaForTokenClassification",
-            "MegaModel",
-            "MegaPreTrainedModel",
         ]
     )
     _import_structure["models.megatron_bert"].extend(
@@ -2578,27 +2732,6 @@ else:
             "MvpForSequenceClassification",
             "MvpModel",
             "MvpPreTrainedModel",
-        ]
-    )
-    _import_structure["models.nat"].extend(
-        [
-            "NatBackbone",
-            "NatForImageClassification",
-            "NatModel",
-            "NatPreTrainedModel",
-        ]
-    )
-    _import_structure["models.nezha"].extend(
-        [
-            "NezhaForMaskedLM",
-            "NezhaForMultipleChoice",
-            "NezhaForNextSentencePrediction",
-            "NezhaForPreTraining",
-            "NezhaForQuestionAnswering",
-            "NezhaForSequenceClassification",
-            "NezhaForTokenClassification",
-            "NezhaModel",
-            "NezhaPreTrainedModel",
         ]
     )
     _import_structure["models.nllb_moe"].extend(
@@ -2811,21 +2944,6 @@ else:
             "PvtV2PreTrainedModel",
         ]
     )
-    _import_structure["models.qdqbert"].extend(
-        [
-            "QDQBertForMaskedLM",
-            "QDQBertForMultipleChoice",
-            "QDQBertForNextSentencePrediction",
-            "QDQBertForQuestionAnswering",
-            "QDQBertForSequenceClassification",
-            "QDQBertForTokenClassification",
-            "QDQBertLayer",
-            "QDQBertLMHeadModel",
-            "QDQBertModel",
-            "QDQBertPreTrainedModel",
-            "load_tf_weights_in_qdqbert",
-        ]
-    )
     _import_structure["models.qwen2"].extend(
         [
             "Qwen2ForCausalLM",
@@ -2850,18 +2968,6 @@ else:
             "RagPreTrainedModel",
             "RagSequenceForGeneration",
             "RagTokenForGeneration",
-        ]
-    )
-    _import_structure["models.realm"].extend(
-        [
-            "RealmEmbedder",
-            "RealmForOpenQA",
-            "RealmKnowledgeAugEncoder",
-            "RealmPreTrainedModel",
-            "RealmReader",
-            "RealmRetriever",
-            "RealmScorer",
-            "load_tf_weights_in_realm",
         ]
     )
     _import_structure["models.recurrent_gemma"].extend(
@@ -2965,6 +3071,15 @@ else:
             "load_tf_weights_in_roformer",
         ]
     )
+    _import_structure["models.rt_detr"].extend(
+        [
+            "RTDetrForObjectDetection",
+            "RTDetrModel",
+            "RTDetrPreTrainedModel",
+            "RTDetrResNetBackbone",
+            "RTDetrResNetPreTrainedModel",
+        ]
+    )
     _import_structure["models.rwkv"].extend(
         [
             "RwkvForCausalLM",
@@ -3052,7 +3167,6 @@ else:
             "Speech2TextPreTrainedModel",
         ]
     )
-    _import_structure["models.speech_to_text_2"].extend(["Speech2Text2ForCausalLM", "Speech2Text2PreTrainedModel"])
     _import_structure["models.speecht5"].extend(
         [
             "SpeechT5ForSpeechToSpeech",
@@ -3200,14 +3314,6 @@ else:
             "TrOCRPreTrainedModel",
         ]
     )
-    _import_structure["models.tvlt"].extend(
-        [
-            "TvltForAudioVisualClassification",
-            "TvltForPreTraining",
-            "TvltModel",
-            "TvltPreTrainedModel",
-        ]
-    )
     _import_structure["models.tvp"].extend(
         [
             "TvpForVideoGrounding",
@@ -3318,13 +3424,6 @@ else:
             "ViTForMaskedImageModeling",
             "ViTModel",
             "ViTPreTrainedModel",
-        ]
-    )
-    _import_structure["models.vit_hybrid"].extend(
-        [
-            "ViTHybridForImageClassification",
-            "ViTHybridModel",
-            "ViTHybridPreTrainedModel",
         ]
     )
     _import_structure["models.vit_mae"].extend(
@@ -3447,16 +3546,6 @@ else:
             "XLMWithLMHeadModel",
         ]
     )
-    _import_structure["models.xlm_prophetnet"].extend(
-        [
-            "XLMProphetNetDecoder",
-            "XLMProphetNetEncoder",
-            "XLMProphetNetForCausalLM",
-            "XLMProphetNetForConditionalGeneration",
-            "XLMProphetNetModel",
-            "XLMProphetNetPreTrainedModel",
-        ]
-    )
     _import_structure["models.xlm_roberta"].extend(
         [
             "XLMRobertaForCausalLM",
@@ -3523,6 +3612,12 @@ else:
             "YosoLayer",
             "YosoModel",
             "YosoPreTrainedModel",
+        ]
+    )
+    _import_structure["models.zoedepth"].extend(
+        [
+            "ZoeDepthForDepthEstimation",
+            "ZoeDepthPreTrainedModel",
         ]
     )
     _import_structure["optimization"] = [
@@ -3799,6 +3894,14 @@ else:
             "TFDeiTPreTrainedModel",
         ]
     )
+    _import_structure["models.deprecated.efficientformer"].extend(
+        [
+            "TFEfficientFormerForImageClassification",
+            "TFEfficientFormerForImageClassificationWithTeacher",
+            "TFEfficientFormerModel",
+            "TFEfficientFormerPreTrainedModel",
+        ]
+    )
     _import_structure["models.deprecated.transfo_xl"].extend(
         [
             "TFAdaptiveEmbedding",
@@ -3829,14 +3932,6 @@ else:
             "TFDPRPretrainedReader",
             "TFDPRQuestionEncoder",
             "TFDPRReader",
-        ]
-    )
-    _import_structure["models.efficientformer"].extend(
-        [
-            "TFEfficientFormerForImageClassification",
-            "TFEfficientFormerForImageClassificationWithTeacher",
-            "TFEfficientFormerModel",
-            "TFEfficientFormerPreTrainedModel",
         ]
     )
     _import_structure["models.electra"].extend(
@@ -4810,6 +4905,11 @@ if TYPE_CHECKING:
         CanineConfig,
         CanineTokenizer,
     )
+    from .models.chameleon import (
+        ChameleonConfig,
+        ChameleonProcessor,
+        ChameleonVQVAEConfig,
+    )
     from .models.chinese_clip import (
         ChineseCLIPConfig,
         ChineseCLIPProcessor,
@@ -4888,18 +4988,47 @@ if TYPE_CHECKING:
         DeformableDetrConfig,
     )
     from .models.deit import DeiTConfig
+    from .models.deprecated.deta import DetaConfig
+    from .models.deprecated.efficientformer import (
+        EfficientFormerConfig,
+    )
+    from .models.deprecated.ernie_m import ErnieMConfig
+    from .models.deprecated.gptsan_japanese import (
+        GPTSanJapaneseConfig,
+        GPTSanJapaneseTokenizer,
+    )
+    from .models.deprecated.graphormer import GraphormerConfig
+    from .models.deprecated.jukebox import (
+        JukeboxConfig,
+        JukeboxPriorConfig,
+        JukeboxTokenizer,
+        JukeboxVQVAEConfig,
+    )
     from .models.deprecated.mctct import (
         MCTCTConfig,
         MCTCTFeatureExtractor,
         MCTCTProcessor,
     )
+    from .models.deprecated.mega import MegaConfig
     from .models.deprecated.mmbt import MMBTConfig
+    from .models.deprecated.nat import NatConfig
+    from .models.deprecated.nezha import NezhaConfig
     from .models.deprecated.open_llama import (
         OpenLlamaConfig,
+    )
+    from .models.deprecated.qdqbert import QDQBertConfig
+    from .models.deprecated.realm import (
+        RealmConfig,
+        RealmTokenizer,
     )
     from .models.deprecated.retribert import (
         RetriBertConfig,
         RetriBertTokenizer,
+    )
+    from .models.deprecated.speech_to_text_2 import (
+        Speech2Text2Config,
+        Speech2Text2Processor,
+        Speech2Text2Tokenizer,
     )
     from .models.deprecated.tapex import TapexTokenizer
     from .models.deprecated.trajectory_transformer import (
@@ -4910,9 +5039,19 @@ if TYPE_CHECKING:
         TransfoXLCorpus,
         TransfoXLTokenizer,
     )
+    from .models.deprecated.tvlt import (
+        TvltConfig,
+        TvltFeatureExtractor,
+        TvltProcessor,
+    )
     from .models.deprecated.van import VanConfig
+    from .models.deprecated.vit_hybrid import (
+        ViTHybridConfig,
+    )
+    from .models.deprecated.xlm_prophetnet import (
+        XLMProphetNetConfig,
+    )
     from .models.depth_anything import DepthAnythingConfig
-    from .models.deta import DetaConfig
     from .models.detr import DetrConfig
     from .models.dinat import DinatConfig
     from .models.dinov2 import Dinov2Config
@@ -4932,9 +5071,6 @@ if TYPE_CHECKING:
         DPRReaderTokenizer,
     )
     from .models.dpt import DPTConfig
-    from .models.efficientformer import (
-        EfficientFormerConfig,
-    )
     from .models.efficientnet import (
         EfficientNetConfig,
     )
@@ -4948,7 +5084,6 @@ if TYPE_CHECKING:
     )
     from .models.encoder_decoder import EncoderDecoderConfig
     from .models.ernie import ErnieConfig
-    from .models.ernie_m import ErnieMConfig
     from .models.esm import EsmConfig, EsmTokenizer
     from .models.falcon import FalconConfig
     from .models.fastspeech2_conformer import (
@@ -4977,6 +5112,7 @@ if TYPE_CHECKING:
     )
     from .models.fuyu import FuyuConfig
     from .models.gemma import GemmaConfig
+    from .models.gemma2 import Gemma2Config
     from .models.git import (
         GitConfig,
         GitProcessor,
@@ -4996,11 +5132,6 @@ if TYPE_CHECKING:
         GPTNeoXJapaneseConfig,
     )
     from .models.gptj import GPTJConfig
-    from .models.gptsan_japanese import (
-        GPTSanJapaneseConfig,
-        GPTSanJapaneseTokenizer,
-    )
-    from .models.graphormer import GraphormerConfig
     from .models.grounding_dino import (
         GroundingDinoConfig,
         GroundingDinoProcessor,
@@ -5011,6 +5142,7 @@ if TYPE_CHECKING:
         GroupViTVisionConfig,
     )
     from .models.herbert import HerbertTokenizer
+    from .models.hiera import HieraConfig
     from .models.hubert import HubertConfig
     from .models.ibert import IBertConfig
     from .models.idefics import (
@@ -5025,14 +5157,14 @@ if TYPE_CHECKING:
         InstructBlipQFormerConfig,
         InstructBlipVisionConfig,
     )
+    from .models.instructblipvideo import (
+        InstructBlipVideoConfig,
+        InstructBlipVideoProcessor,
+        InstructBlipVideoQFormerConfig,
+        InstructBlipVideoVisionConfig,
+    )
     from .models.jamba import JambaConfig
     from .models.jetmoe import JetMoeConfig
-    from .models.jukebox import (
-        JukeboxConfig,
-        JukeboxPriorConfig,
-        JukeboxTokenizer,
-        JukeboxVQVAEConfig,
-    )
     from .models.kosmos2 import (
         Kosmos2Config,
         Kosmos2Processor,
@@ -5068,6 +5200,10 @@ if TYPE_CHECKING:
         LlavaNextConfig,
         LlavaNextProcessor,
     )
+    from .models.llava_next_video import (
+        LlavaNextVideoConfig,
+        LlavaNextVideoProcessor,
+    )
     from .models.longformer import (
         LongformerConfig,
         LongformerTokenizer,
@@ -5098,7 +5234,6 @@ if TYPE_CHECKING:
         MaskFormerSwinConfig,
     )
     from .models.mbart import MBartConfig
-    from .models.mega import MegaConfig
     from .models.megatron_bert import (
         MegatronBertConfig,
     )
@@ -5141,8 +5276,6 @@ if TYPE_CHECKING:
         MusicgenMelodyDecoderConfig,
     )
     from .models.mvp import MvpConfig, MvpTokenizer
-    from .models.nat import NatConfig
-    from .models.nezha import NezhaConfig
     from .models.nllb_moe import NllbMoeConfig
     from .models.nougat import NougatProcessor
     from .models.nystromformer import (
@@ -5213,14 +5346,9 @@ if TYPE_CHECKING:
     )
     from .models.pvt import PvtConfig
     from .models.pvt_v2 import PvtV2Config
-    from .models.qdqbert import QDQBertConfig
     from .models.qwen2 import Qwen2Config, Qwen2Tokenizer
     from .models.qwen2_moe import Qwen2MoeConfig
     from .models.rag import RagConfig, RagRetriever, RagTokenizer
-    from .models.realm import (
-        RealmConfig,
-        RealmTokenizer,
-    )
     from .models.recurrent_gemma import RecurrentGemmaConfig
     from .models.reformer import ReformerConfig
     from .models.regnet import RegNetConfig
@@ -5240,6 +5368,10 @@ if TYPE_CHECKING:
     from .models.roformer import (
         RoFormerConfig,
         RoFormerTokenizer,
+    )
+    from .models.rt_detr import (
+        RTDetrConfig,
+        RTDetrResNetConfig,
     )
     from .models.rwkv import RwkvConfig
     from .models.sam import (
@@ -5272,11 +5404,6 @@ if TYPE_CHECKING:
         Speech2TextConfig,
         Speech2TextFeatureExtractor,
         Speech2TextProcessor,
-    )
-    from .models.speech_to_text_2 import (
-        Speech2Text2Config,
-        Speech2Text2Processor,
-        Speech2Text2Tokenizer,
     )
     from .models.speecht5 import (
         SpeechT5Config,
@@ -5323,11 +5450,6 @@ if TYPE_CHECKING:
         TrOCRConfig,
         TrOCRProcessor,
     )
-    from .models.tvlt import (
-        TvltConfig,
-        TvltFeatureExtractor,
-        TvltProcessor,
-    )
     from .models.tvp import (
         TvpConfig,
         TvpProcessor,
@@ -5365,9 +5487,6 @@ if TYPE_CHECKING:
         VisualBertConfig,
     )
     from .models.vit import ViTConfig
-    from .models.vit_hybrid import (
-        ViTHybridConfig,
-    )
     from .models.vit_mae import ViTMAEConfig
     from .models.vit_msn import ViTMSNConfig
     from .models.vitdet import VitDetConfig
@@ -5408,9 +5527,6 @@ if TYPE_CHECKING:
     )
     from .models.xglm import XGLMConfig
     from .models.xlm import XLMConfig, XLMTokenizer
-    from .models.xlm_prophetnet import (
-        XLMProphetNetConfig,
-    )
     from .models.xlm_roberta import (
         XLMRobertaConfig,
     )
@@ -5421,13 +5537,12 @@ if TYPE_CHECKING:
     from .models.xmod import XmodConfig
     from .models.yolos import YolosConfig
     from .models.yoso import YosoConfig
+    from .models.zoedepth import ZoeDepthConfig
 
     # Pipelines
     from .pipelines import (
         AudioClassificationPipeline,
         AutomaticSpeechRecognitionPipeline,
-        Conversation,
-        ConversationalPipeline,
         CsvPipelineDataFormat,
         DepthEstimationPipeline,
         DocumentQuestionAnsweringPipeline,
@@ -5570,7 +5685,8 @@ if TYPE_CHECKING:
         from .models.code_llama import CodeLlamaTokenizer
         from .models.cpm import CpmTokenizer
         from .models.deberta_v2 import DebertaV2Tokenizer
-        from .models.ernie_m import ErnieMTokenizer
+        from .models.deprecated.ernie_m import ErnieMTokenizer
+        from .models.deprecated.xlm_prophetnet import XLMProphetNetTokenizer
         from .models.fnet import FNetTokenizer
         from .models.gemma import GemmaTokenizer
         from .models.gpt_sw3 import GPTSw3Tokenizer
@@ -5593,7 +5709,6 @@ if TYPE_CHECKING:
         from .models.t5 import T5Tokenizer
         from .models.udop import UdopTokenizer
         from .models.xglm import XGLMTokenizer
-        from .models.xlm_prophetnet import XLMProphetNetTokenizer
         from .models.xlm_roberta import XLMRobertaTokenizer
         from .models.xlnet import XLNetTokenizer
 
@@ -5621,6 +5736,7 @@ if TYPE_CHECKING:
         from .models.cpm import CpmTokenizerFast
         from .models.deberta import DebertaTokenizerFast
         from .models.deberta_v2 import DebertaV2TokenizerFast
+        from .models.deprecated.realm import RealmTokenizerFast
         from .models.deprecated.retribert import RetriBertTokenizerFast
         from .models.distilbert import DistilBertTokenizerFast
         from .models.dpr import (
@@ -5656,7 +5772,6 @@ if TYPE_CHECKING:
         from .models.openai import OpenAIGPTTokenizerFast
         from .models.pegasus import PegasusTokenizerFast
         from .models.qwen2 import Qwen2TokenizerFast
-        from .models.realm import RealmTokenizerFast
         from .models.reformer import ReformerTokenizerFast
         from .models.rembert import RemBertTokenizerFast
         from .models.roberta import RobertaTokenizerFast
@@ -5705,12 +5820,14 @@ if TYPE_CHECKING:
     except OptionalDependencyNotAvailable:
         from .utils.dummy_vision_objects import *
     else:
-        from .image_processing_utils import ImageProcessingMixin
+        from .image_processing_base import ImageProcessingMixin
+        from .image_processing_utils import BaseImageProcessor
         from .image_utils import ImageFeatureExtractionMixin
         from .models.beit import BeitFeatureExtractor, BeitImageProcessor
         from .models.bit import BitImageProcessor
         from .models.blip import BlipImageProcessor
         from .models.bridgetower import BridgeTowerImageProcessor
+        from .models.chameleon import ChameleonImageProcessor
         from .models.chinese_clip import (
             ChineseCLIPFeatureExtractor,
             ChineseCLIPImageProcessor,
@@ -5726,11 +5843,13 @@ if TYPE_CHECKING:
             DeformableDetrImageProcessor,
         )
         from .models.deit import DeiTFeatureExtractor, DeiTImageProcessor
-        from .models.deta import DetaImageProcessor
+        from .models.deprecated.deta import DetaImageProcessor
+        from .models.deprecated.efficientformer import EfficientFormerImageProcessor
+        from .models.deprecated.tvlt import TvltImageProcessor
+        from .models.deprecated.vit_hybrid import ViTHybridImageProcessor
         from .models.detr import DetrFeatureExtractor, DetrImageProcessor
         from .models.donut import DonutFeatureExtractor, DonutImageProcessor
         from .models.dpt import DPTFeatureExtractor, DPTImageProcessor
-        from .models.efficientformer import EfficientFormerImageProcessor
         from .models.efficientnet import EfficientNetImageProcessor
         from .models.flava import (
             FlavaFeatureExtractor,
@@ -5743,6 +5862,7 @@ if TYPE_CHECKING:
         from .models.idefics import IdeficsImageProcessor
         from .models.idefics2 import Idefics2ImageProcessor
         from .models.imagegpt import ImageGPTFeatureExtractor, ImageGPTImageProcessor
+        from .models.instructblipvideo import InstructBlipVideoImageProcessor
         from .models.layoutlmv2 import (
             LayoutLMv2FeatureExtractor,
             LayoutLMv2ImageProcessor,
@@ -5753,6 +5873,7 @@ if TYPE_CHECKING:
         )
         from .models.levit import LevitFeatureExtractor, LevitImageProcessor
         from .models.llava_next import LlavaNextImageProcessor
+        from .models.llava_next_video import LlavaNextVideoImageProcessor
         from .models.mask2former import Mask2FormerImageProcessor
         from .models.maskformer import (
             MaskFormerFeatureExtractor,
@@ -5778,22 +5899,31 @@ if TYPE_CHECKING:
             PoolFormerImageProcessor,
         )
         from .models.pvt import PvtImageProcessor
+        from .models.rt_detr import RTDetrImageProcessor
         from .models.sam import SamImageProcessor
         from .models.segformer import SegformerFeatureExtractor, SegformerImageProcessor
         from .models.seggpt import SegGptImageProcessor
         from .models.siglip import SiglipImageProcessor
         from .models.superpoint import SuperPointImageProcessor
         from .models.swin2sr import Swin2SRImageProcessor
-        from .models.tvlt import TvltImageProcessor
         from .models.tvp import TvpImageProcessor
         from .models.video_llava import VideoLlavaImageProcessor
         from .models.videomae import VideoMAEFeatureExtractor, VideoMAEImageProcessor
         from .models.vilt import ViltFeatureExtractor, ViltImageProcessor, ViltProcessor
         from .models.vit import ViTFeatureExtractor, ViTImageProcessor
-        from .models.vit_hybrid import ViTHybridImageProcessor
         from .models.vitmatte import VitMatteImageProcessor
         from .models.vivit import VivitImageProcessor
         from .models.yolos import YolosFeatureExtractor, YolosImageProcessor
+        from .models.zoedepth import ZoeDepthImageProcessor
+
+    try:
+        if not is_torchvision_available():
+            raise OptionalDependencyNotAvailable()
+    except OptionalDependencyNotAvailable:
+        from .utils.dummy_torchvision_objects import *
+    else:
+        from .image_processing_utils_fast import BaseImageProcessorFast
+        from .models.vit import ViTImageProcessorFast
 
     # Modeling
     try:
@@ -5809,6 +5939,7 @@ if TYPE_CHECKING:
             Cache,
             CacheConfig,
             DynamicCache,
+            EncoderDecoderCache,
             HQQQuantizedCache,
             QuantizedCache,
             QuantizedCacheConfig,
@@ -6144,6 +6275,13 @@ if TYPE_CHECKING:
             CaninePreTrainedModel,
             load_tf_weights_in_canine,
         )
+        from .models.chameleon import (
+            ChameleonForConditionalGeneration,
+            ChameleonModel,
+            ChameleonPreTrainedModel,
+            ChameleonProcessor,
+            ChameleonVQVAE,
+        )
         from .models.chinese_clip import (
             ChineseCLIPModel,
             ChineseCLIPPreTrainedModel,
@@ -6300,15 +6438,78 @@ if TYPE_CHECKING:
             DeiTModel,
             DeiTPreTrainedModel,
         )
+        from .models.deprecated.deta import (
+            DetaForObjectDetection,
+            DetaModel,
+            DetaPreTrainedModel,
+        )
+        from .models.deprecated.efficientformer import (
+            EfficientFormerForImageClassification,
+            EfficientFormerForImageClassificationWithTeacher,
+            EfficientFormerModel,
+            EfficientFormerPreTrainedModel,
+        )
+        from .models.deprecated.ernie_m import (
+            ErnieMForInformationExtraction,
+            ErnieMForMultipleChoice,
+            ErnieMForQuestionAnswering,
+            ErnieMForSequenceClassification,
+            ErnieMForTokenClassification,
+            ErnieMModel,
+            ErnieMPreTrainedModel,
+        )
+        from .models.deprecated.gptsan_japanese import (
+            GPTSanJapaneseForConditionalGeneration,
+            GPTSanJapaneseModel,
+            GPTSanJapanesePreTrainedModel,
+        )
+        from .models.deprecated.graphormer import (
+            GraphormerForGraphClassification,
+            GraphormerModel,
+            GraphormerPreTrainedModel,
+        )
+        from .models.deprecated.jukebox import (
+            JukeboxModel,
+            JukeboxPreTrainedModel,
+            JukeboxPrior,
+            JukeboxVQVAE,
+        )
         from .models.deprecated.mctct import (
             MCTCTForCTC,
             MCTCTModel,
             MCTCTPreTrainedModel,
         )
+        from .models.deprecated.mega import (
+            MegaForCausalLM,
+            MegaForMaskedLM,
+            MegaForMultipleChoice,
+            MegaForQuestionAnswering,
+            MegaForSequenceClassification,
+            MegaForTokenClassification,
+            MegaModel,
+            MegaPreTrainedModel,
+        )
         from .models.deprecated.mmbt import (
             MMBTForClassification,
             MMBTModel,
             ModalEmbeddings,
+        )
+        from .models.deprecated.nat import (
+            NatBackbone,
+            NatForImageClassification,
+            NatModel,
+            NatPreTrainedModel,
+        )
+        from .models.deprecated.nezha import (
+            NezhaForMaskedLM,
+            NezhaForMultipleChoice,
+            NezhaForNextSentencePrediction,
+            NezhaForPreTraining,
+            NezhaForQuestionAnswering,
+            NezhaForSequenceClassification,
+            NezhaForTokenClassification,
+            NezhaModel,
+            NezhaPreTrainedModel,
         )
         from .models.deprecated.open_llama import (
             OpenLlamaForCausalLM,
@@ -6316,9 +6517,36 @@ if TYPE_CHECKING:
             OpenLlamaModel,
             OpenLlamaPreTrainedModel,
         )
+        from .models.deprecated.qdqbert import (
+            QDQBertForMaskedLM,
+            QDQBertForMultipleChoice,
+            QDQBertForNextSentencePrediction,
+            QDQBertForQuestionAnswering,
+            QDQBertForSequenceClassification,
+            QDQBertForTokenClassification,
+            QDQBertLayer,
+            QDQBertLMHeadModel,
+            QDQBertModel,
+            QDQBertPreTrainedModel,
+            load_tf_weights_in_qdqbert,
+        )
+        from .models.deprecated.realm import (
+            RealmEmbedder,
+            RealmForOpenQA,
+            RealmKnowledgeAugEncoder,
+            RealmPreTrainedModel,
+            RealmReader,
+            RealmRetriever,
+            RealmScorer,
+            load_tf_weights_in_realm,
+        )
         from .models.deprecated.retribert import (
             RetriBertModel,
             RetriBertPreTrainedModel,
+        )
+        from .models.deprecated.speech_to_text_2 import (
+            Speech2Text2ForCausalLM,
+            Speech2Text2PreTrainedModel,
         )
         from .models.deprecated.trajectory_transformer import (
             TrajectoryTransformerModel,
@@ -6332,19 +6560,33 @@ if TYPE_CHECKING:
             TransfoXLPreTrainedModel,
             load_tf_weights_in_transfo_xl,
         )
+        from .models.deprecated.tvlt import (
+            TvltForAudioVisualClassification,
+            TvltForPreTraining,
+            TvltModel,
+            TvltPreTrainedModel,
+        )
         from .models.deprecated.van import (
             VanForImageClassification,
             VanModel,
             VanPreTrainedModel,
         )
+        from .models.deprecated.vit_hybrid import (
+            ViTHybridForImageClassification,
+            ViTHybridModel,
+            ViTHybridPreTrainedModel,
+        )
+        from .models.deprecated.xlm_prophetnet import (
+            XLMProphetNetDecoder,
+            XLMProphetNetEncoder,
+            XLMProphetNetForCausalLM,
+            XLMProphetNetForConditionalGeneration,
+            XLMProphetNetModel,
+            XLMProphetNetPreTrainedModel,
+        )
         from .models.depth_anything import (
             DepthAnythingForDepthEstimation,
             DepthAnythingPreTrainedModel,
-        )
-        from .models.deta import (
-            DetaForObjectDetection,
-            DetaModel,
-            DetaPreTrainedModel,
         )
         from .models.detr import (
             DetrForObjectDetection,
@@ -6392,12 +6634,6 @@ if TYPE_CHECKING:
             DPTModel,
             DPTPreTrainedModel,
         )
-        from .models.efficientformer import (
-            EfficientFormerForImageClassification,
-            EfficientFormerForImageClassificationWithTeacher,
-            EfficientFormerModel,
-            EfficientFormerPreTrainedModel,
-        )
         from .models.efficientnet import (
             EfficientNetForImageClassification,
             EfficientNetModel,
@@ -6431,15 +6667,6 @@ if TYPE_CHECKING:
             ErnieForTokenClassification,
             ErnieModel,
             ErniePreTrainedModel,
-        )
-        from .models.ernie_m import (
-            ErnieMForInformationExtraction,
-            ErnieMForMultipleChoice,
-            ErnieMForQuestionAnswering,
-            ErnieMForSequenceClassification,
-            ErnieMForTokenClassification,
-            ErnieMModel,
-            ErnieMPreTrainedModel,
         )
         from .models.esm import (
             EsmFoldPreTrainedModel,
@@ -6530,6 +6757,13 @@ if TYPE_CHECKING:
             GemmaModel,
             GemmaPreTrainedModel,
         )
+        from .models.gemma2 import (
+            Gemma2ForCausalLM,
+            Gemma2ForSequenceClassification,
+            Gemma2ForTokenClassification,
+            Gemma2Model,
+            Gemma2PreTrainedModel,
+        )
         from .models.git import (
             GitForCausalLM,
             GitModel,
@@ -6589,16 +6823,6 @@ if TYPE_CHECKING:
             GPTJModel,
             GPTJPreTrainedModel,
         )
-        from .models.gptsan_japanese import (
-            GPTSanJapaneseForConditionalGeneration,
-            GPTSanJapaneseModel,
-            GPTSanJapanesePreTrainedModel,
-        )
-        from .models.graphormer import (
-            GraphormerForGraphClassification,
-            GraphormerModel,
-            GraphormerPreTrainedModel,
-        )
         from .models.grounding_dino import (
             GroundingDinoForObjectDetection,
             GroundingDinoModel,
@@ -6609,6 +6833,13 @@ if TYPE_CHECKING:
             GroupViTPreTrainedModel,
             GroupViTTextModel,
             GroupViTVisionModel,
+        )
+        from .models.hiera import (
+            HieraBackbone,
+            HieraForImageClassification,
+            HieraForPreTraining,
+            HieraModel,
+            HieraPreTrainedModel,
         )
         from .models.hubert import (
             HubertForCTC,
@@ -6655,6 +6886,12 @@ if TYPE_CHECKING:
             InstructBlipQFormerModel,
             InstructBlipVisionModel,
         )
+        from .models.instructblipvideo import (
+            InstructBlipVideoForConditionalGeneration,
+            InstructBlipVideoPreTrainedModel,
+            InstructBlipVideoQFormerModel,
+            InstructBlipVideoVisionModel,
+        )
         from .models.jamba import (
             JambaForCausalLM,
             JambaForSequenceClassification,
@@ -6666,12 +6903,6 @@ if TYPE_CHECKING:
             JetMoeForSequenceClassification,
             JetMoeModel,
             JetMoePreTrainedModel,
-        )
-        from .models.jukebox import (
-            JukeboxModel,
-            JukeboxPreTrainedModel,
-            JukeboxPrior,
-            JukeboxVQVAE,
         )
         from .models.kosmos2 import (
             Kosmos2ForConditionalGeneration,
@@ -6735,6 +6966,10 @@ if TYPE_CHECKING:
         from .models.llava_next import (
             LlavaNextForConditionalGeneration,
             LlavaNextPreTrainedModel,
+        )
+        from .models.llava_next_video import (
+            LlavaNextVideoForConditionalGeneration,
+            LlavaNextVideoPreTrainedModel,
         )
         from .models.longformer import (
             LongformerForMaskedLM,
@@ -6809,16 +7044,6 @@ if TYPE_CHECKING:
             MBartForSequenceClassification,
             MBartModel,
             MBartPreTrainedModel,
-        )
-        from .models.mega import (
-            MegaForCausalLM,
-            MegaForMaskedLM,
-            MegaForMultipleChoice,
-            MegaForQuestionAnswering,
-            MegaForSequenceClassification,
-            MegaForTokenClassification,
-            MegaModel,
-            MegaPreTrainedModel,
         )
         from .models.megatron_bert import (
             MegatronBertForCausalLM,
@@ -6945,23 +7170,6 @@ if TYPE_CHECKING:
             MvpForSequenceClassification,
             MvpModel,
             MvpPreTrainedModel,
-        )
-        from .models.nat import (
-            NatBackbone,
-            NatForImageClassification,
-            NatModel,
-            NatPreTrainedModel,
-        )
-        from .models.nezha import (
-            NezhaForMaskedLM,
-            NezhaForMultipleChoice,
-            NezhaForNextSentencePrediction,
-            NezhaForPreTraining,
-            NezhaForQuestionAnswering,
-            NezhaForSequenceClassification,
-            NezhaForTokenClassification,
-            NezhaModel,
-            NezhaPreTrainedModel,
         )
         from .models.nllb_moe import (
             NllbMoeForConditionalGeneration,
@@ -7125,19 +7333,6 @@ if TYPE_CHECKING:
             PvtV2Model,
             PvtV2PreTrainedModel,
         )
-        from .models.qdqbert import (
-            QDQBertForMaskedLM,
-            QDQBertForMultipleChoice,
-            QDQBertForNextSentencePrediction,
-            QDQBertForQuestionAnswering,
-            QDQBertForSequenceClassification,
-            QDQBertForTokenClassification,
-            QDQBertLayer,
-            QDQBertLMHeadModel,
-            QDQBertModel,
-            QDQBertPreTrainedModel,
-            load_tf_weights_in_qdqbert,
-        )
         from .models.qwen2 import (
             Qwen2ForCausalLM,
             Qwen2ForSequenceClassification,
@@ -7157,16 +7352,6 @@ if TYPE_CHECKING:
             RagPreTrainedModel,
             RagSequenceForGeneration,
             RagTokenForGeneration,
-        )
-        from .models.realm import (
-            RealmEmbedder,
-            RealmForOpenQA,
-            RealmKnowledgeAugEncoder,
-            RealmPreTrainedModel,
-            RealmReader,
-            RealmRetriever,
-            RealmScorer,
-            load_tf_weights_in_realm,
         )
         from .models.recurrent_gemma import (
             RecurrentGemmaForCausalLM,
@@ -7251,6 +7436,13 @@ if TYPE_CHECKING:
             RoFormerPreTrainedModel,
             load_tf_weights_in_roformer,
         )
+        from .models.rt_detr import (
+            RTDetrForObjectDetection,
+            RTDetrModel,
+            RTDetrPreTrainedModel,
+            RTDetrResNetBackbone,
+            RTDetrResNetPreTrainedModel,
+        )
         from .models.rwkv import (
             RwkvForCausalLM,
             RwkvModel,
@@ -7317,10 +7509,6 @@ if TYPE_CHECKING:
             Speech2TextForConditionalGeneration,
             Speech2TextModel,
             Speech2TextPreTrainedModel,
-        )
-        from .models.speech_to_text_2 import (
-            Speech2Text2ForCausalLM,
-            Speech2Text2PreTrainedModel,
         )
         from .models.speecht5 import (
             SpeechT5ForSpeechToSpeech,
@@ -7435,12 +7623,6 @@ if TYPE_CHECKING:
             TrOCRForCausalLM,
             TrOCRPreTrainedModel,
         )
-        from .models.tvlt import (
-            TvltForAudioVisualClassification,
-            TvltForPreTraining,
-            TvltModel,
-            TvltPreTrainedModel,
-        )
         from .models.tvp import (
             TvpForVideoGrounding,
             TvpModel,
@@ -7524,11 +7706,6 @@ if TYPE_CHECKING:
             ViTForMaskedImageModeling,
             ViTModel,
             ViTPreTrainedModel,
-        )
-        from .models.vit_hybrid import (
-            ViTHybridForImageClassification,
-            ViTHybridModel,
-            ViTHybridPreTrainedModel,
         )
         from .models.vit_mae import (
             ViTMAEForPreTraining,
@@ -7622,14 +7799,6 @@ if TYPE_CHECKING:
             XLMPreTrainedModel,
             XLMWithLMHeadModel,
         )
-        from .models.xlm_prophetnet import (
-            XLMProphetNetDecoder,
-            XLMProphetNetEncoder,
-            XLMProphetNetForCausalLM,
-            XLMProphetNetForConditionalGeneration,
-            XLMProphetNetModel,
-            XLMProphetNetPreTrainedModel,
-        )
         from .models.xlm_roberta import (
             XLMRobertaForCausalLM,
             XLMRobertaForMaskedLM,
@@ -7685,6 +7854,10 @@ if TYPE_CHECKING:
             YosoLayer,
             YosoModel,
             YosoPreTrainedModel,
+        )
+        from .models.zoedepth import (
+            ZoeDepthForDepthEstimation,
+            ZoeDepthPreTrainedModel,
         )
 
         # Optimization
@@ -7921,6 +8094,12 @@ if TYPE_CHECKING:
             TFDeiTModel,
             TFDeiTPreTrainedModel,
         )
+        from .models.deprecated.efficientformer import (
+            TFEfficientFormerForImageClassification,
+            TFEfficientFormerForImageClassificationWithTeacher,
+            TFEfficientFormerModel,
+            TFEfficientFormerPreTrainedModel,
+        )
         from .models.deprecated.transfo_xl import (
             TFAdaptiveEmbedding,
             TFTransfoXLForSequenceClassification,
@@ -7946,12 +8125,6 @@ if TYPE_CHECKING:
             TFDPRPretrainedReader,
             TFDPRQuestionEncoder,
             TFDPRReader,
-        )
-        from .models.efficientformer import (
-            TFEfficientFormerForImageClassification,
-            TFEfficientFormerForImageClassificationWithTeacher,
-            TFEfficientFormerModel,
-            TFEfficientFormerPreTrainedModel,
         )
         from .models.electra import (
             TFElectraForMaskedLM,
