@@ -127,6 +127,11 @@ NEED_SETUP_CACHE_CLASSES_MAPPING = {
 }
 QUANT_BACKEND_CLASSES_MAPPING = {"quanto": QuantoQuantizedCache, "HQQ": HQQQuantizedCache}
 
+class TokenSlideError(Exception):
+    def __init__(self, full_seq_prompt, new_d, d_agree_sum, d_agree_sum_max, 
+                 d_agree_sum_index, last_prompt_tokens_size, new_d_short):
+        msg: str = f"TokenSlideError: \n{full_seq_prompt=}\n{new_d=}\n{d_agree_sum=}\n{d_agree_sum_max=}\n{d_agree_sum_index=}\n{last_prompt_tokens_size=}\n{new_d_short=}"
+        super().__init__(msg)
 
 def get_sub_seq(a, b):
     i_agree_max = None
@@ -156,7 +161,12 @@ def get_new_tokens_slide(full_seq_prompt, new_d):
         if d_agree_sum > d_agree_sum_max:
             d_agree_sum_max = d_agree_sum
             d_agree_sum_index = i
-    assert d_agree_sum_index is not None
+            
+    if d_agree_sum_index is None or d_agree_sum_index == 0:
+        return None # error, no new tokens have been found
+        #raise TokenSlideError(full_seq_prompt, new_d, d_agree_sum, d_agree_sum_max, 
+        #                      d_agree_sum_index, last_prompt_tokens_size, new_d_short)
+    
     return new_d[:,-d_agree_sum_index:]
 
 
@@ -223,9 +233,13 @@ class AssistedCandidateGeneratorDifferentTokenizers(AssistedCandidateGenerator):
                     input_ids[:,  start_index_in_target_window:], **convert_kwargs
                 )
                 new_valid_draft_ids = get_new_tokens_slide(self.prev_draft_ids, new_draft_ids)
-                
+                if new_valid_draft_ids is None:
+                    # need to use only previous draft tokens
+                    draft_input_ids = self.prev_draft_ids
+                else:
+                    draft_input_ids = torch.cat([self.prev_draft_ids, new_valid_draft_ids], dim=-1)
+                    
                 # new_draft_input_ids = get_only_new_tokens(new_draft_ids, prev_draft_ids_tail)
-                draft_input_ids = torch.cat([self.prev_draft_ids, new_valid_draft_ids], dim=-1)
                 self.prev_draft_ids = draft_input_ids
             else:
                 draft_input_ids = self.convert_token_ids(input_ids, **convert_kwargs)
@@ -274,7 +288,11 @@ class AssistedCandidateGeneratorDifferentTokenizers(AssistedCandidateGenerator):
                 dest=self.target_tokenizer,
             )
             new_target_tokens_check = get_new_tokens_slide(input_ids, new_target_ids_from_window)
-            new_target_ids = torch.cat([input_ids, new_target_tokens_check], dim=-1)
+            if new_target_tokens_check is None:
+                new_target_ids = input_ids
+            else:
+                new_target_ids = torch.cat([input_ids, new_target_tokens_check], dim=-1)
+                
             self.prev_target_ids = input_ids
         else:
             new_target_ids = self.convert_token_ids(
@@ -298,6 +316,7 @@ class AssistedCandidateGeneratorDifferentTokenizers(AssistedCandidateGenerator):
         assert (new_target_ids[:,:input_ids.shape[1]] == input_ids).all() 
 
         if input_ids.shape[1] >= new_target_ids.shape[1]:
+            # add random tail for the target to reject
             some_suffix = torch.tensor([[0,1,2,3,4]], device=new_target_ids.device)
             new_target_ids = torch.cat([new_target_ids, some_suffix], dim=1)
         
