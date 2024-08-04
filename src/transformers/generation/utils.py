@@ -115,6 +115,7 @@ if TYPE_CHECKING:
 
 logger = logging.get_logger(__name__)
 
+import logging as pylog
 
 if is_accelerate_available():
     from accelerate.hooks import AlignDevicesHook, add_hook_to_module
@@ -127,7 +128,12 @@ NEED_SETUP_CACHE_CLASSES_MAPPING = {
 }
 QUANT_BACKEND_CLASSES_MAPPING = {"quanto": QuantoQuantizedCache, "HQQ": HQQQuantizedCache}
 
-
+class TokenSlideError(Exception):
+    def __init__(self, full_seq_prompt, new_d, d_agree_sum, d_agree_sum_max, 
+                 d_agree_sum_index, last_prompt_tokens_size, new_d_short, to):
+        msg: str = f"TokenSlideError: \n{full_seq_prompt[:, -100:]=}\n{new_d=}\n{d_agree_sum=}\n{d_agree_sum_max=}\n{d_agree_sum_index=}\n{last_prompt_tokens_size=}\n{new_d_short=}\n{to=}"
+        super().__init__(msg)
+        
 def get_sub_seq(a, b):
     i_agree_max = None
     agree_max = 0
@@ -145,7 +151,7 @@ def get_only_new_tokens(a, b):
     return a[:, c + b.shape[1]:]
 
 
-def get_new_tokens_slide(full_seq_prompt, new_d):
+def get_new_tokens_slide(full_seq_prompt, new_d, to="target"):
     d_agree_sum_max = 0
     d_agree_sum_index = None
     for i in range(new_d.shape[1]):
@@ -156,8 +162,22 @@ def get_new_tokens_slide(full_seq_prompt, new_d):
         if d_agree_sum > d_agree_sum_max:
             d_agree_sum_max = d_agree_sum
             d_agree_sum_index = i
-    assert d_agree_sum_index is not None
-    return new_d[:,-d_agree_sum_index:]
+
+    if d_agree_sum_index is None or d_agree_sum_index == 0:
+        # pylog.error(f"{TokenSlideError(full_seq_prompt, new_d, d_agree_sum, d_agree_sum_max, d_agree_sum_index, last_prompt_tokens_size, new_d_short, to)=}")
+        if d_agree_sum_index == 0:
+            d_agree = full_seq_prompt[:, -new_d.shape[1]:] == new_d
+            last_agree_index = d_agree.nonzero()[-1, 1]
+            # pylog.error(f"{last_agree_index=}")
+            
+            if last_agree_index < new_d.shape[1] - 1:
+                res = new_d[:, last_agree_index + 1:]
+                # pylog.error(f"{res=}")
+                return res, True
+        return None, False
+    
+    # Second return value detrmines if we should override the prev_token_ids
+    return new_d[:,-d_agree_sum_index:], False
 
 
 class AssistedCandidateGeneratorDifferentTokenizers(AssistedCandidateGenerator):
@@ -198,7 +218,8 @@ class AssistedCandidateGeneratorDifferentTokenizers(AssistedCandidateGenerator):
         optimized = self.assistant_model.config.optimized
         input_ids = input_ids.to(self.assistant_model.device)
         convert_kwargs = {"src": self.target_tokenizer, "dest": self.assistant_tokenizer}
-
+        remove_from_pkv = 0
+        
         if self.prev_tokens is None:
             draft_input_ids = self.convert_token_ids(input_ids, **convert_kwargs)
             self.prev_target_ids = input_ids
@@ -222,10 +243,22 @@ class AssistedCandidateGeneratorDifferentTokenizers(AssistedCandidateGenerator):
                 new_draft_ids = self.convert_token_ids(
                     input_ids[:,  start_index_in_target_window:], **convert_kwargs
                 )
-                new_valid_draft_ids = get_new_tokens_slide(self.prev_draft_ids, new_draft_ids)
+                new_valid_draft_ids, should_replace_past = \
+                    get_new_tokens_slide(self.prev_draft_ids, new_draft_ids, to="draft")
                 
+                if new_valid_draft_ids is None:
+                    # need to use only previous draft tokens
+                    draft_input_ids = self.prev_draft_ids
+                else:
+                    if should_replace_past:
+                        draft_input_ids = self.prev_draft_ids
+                        draft_input_ids[:, -new_valid_draft_ids.shape[1]:] = new_valid_draft_ids
+                        remove_from_pkv = new_valid_draft_ids.shape[1]
+                    else:
+                        draft_input_ids = torch.cat([self.prev_draft_ids, new_valid_draft_ids], dim=-1)
+                    
                 # new_draft_input_ids = get_only_new_tokens(new_draft_ids, prev_draft_ids_tail)
-                draft_input_ids = torch.cat([self.prev_draft_ids, new_valid_draft_ids], dim=-1)
+                
                 self.prev_draft_ids = draft_input_ids
             else:
                 draft_input_ids = self.convert_token_ids(input_ids, **convert_kwargs)
@@ -242,7 +275,7 @@ class AssistedCandidateGeneratorDifferentTokenizers(AssistedCandidateGenerator):
         # (which implicitly contains the number of accepted candidates from the previous round)
         has_past_key_values = self.assistant_kwargs.get("past_key_values", None) is not None
         if has_past_key_values:
-            new_cache_size = new_cur_len - 1
+            new_cache_size = new_cur_len - 1 - remove_from_pkv
             self.assistant_kwargs["past_key_values"] = _crop_past_key_values(
                 self.assistant_model, self.assistant_kwargs["past_key_values"], new_cache_size - 1
             )  # the assistant does not have the token after the last match, hence the -1
@@ -273,8 +306,13 @@ class AssistedCandidateGeneratorDifferentTokenizers(AssistedCandidateGenerator):
                 src=self.assistant_tokenizer,
                 dest=self.target_tokenizer,
             )
-            new_target_tokens_check = get_new_tokens_slide(input_ids, new_target_ids_from_window)
-            new_target_ids = torch.cat([input_ids, new_target_tokens_check], dim=-1)
+            new_target_tokens_check, _ = get_new_tokens_slide(input_ids, new_target_ids_from_window, to="target")
+            
+            if new_target_tokens_check is None:
+                new_target_ids = input_ids
+            else:
+                new_target_ids = torch.cat([input_ids, new_target_tokens_check], dim=-1)
+                
             self.prev_target_ids = input_ids
         else:
             new_target_ids = self.convert_token_ids(
@@ -294,7 +332,7 @@ class AssistedCandidateGeneratorDifferentTokenizers(AssistedCandidateGenerator):
          
     
         # 4. Prepare variables for output
-        candidate_logits = torch.stack(assistant_output.scores, dim=1)
+        # candidate_logits = torch.stack(assistant_output.scores, dim=1)
         assert (new_target_ids[:,:input_ids.shape[1]] == input_ids).all() 
 
         if input_ids.shape[1] >= new_target_ids.shape[1]:
