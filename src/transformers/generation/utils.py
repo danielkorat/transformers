@@ -178,7 +178,65 @@ def get_new_tokens_slide(full_seq_prompt, new_d, to="target"):
     
     # Second return value detrmines if we should override the prev_token_ids
     return new_d[:,-d_agree_sum_index:], False
+import numpy as np
+def get_longest_diag_dict(some, some_nonzero):
+    visited = set()
+    diags = {}
+    for idx in some_nonzero:
+        start_idx = torch.clone(idx)
+        tuple_start_idx = tuple(start_idx.tolist())
+        
+        if tuple_start_idx in visited:
+            continue
+    
+        visited.add(tuple_start_idx)
+        
+        cur_diag_len = 1
+        
+        start_idx += 1
+        while start_idx[0] < some.shape[0] and start_idx[1] < some.shape[1]:
+            tuple_start_idx = tuple(start_idx.tolist())
+            visited.add(tuple_start_idx)
+            
+            if some[start_idx[0],start_idx[1]] == 1:
+                cur_diag_len += 1
+                start_idx += 1
+            else:
+                break
+    
+        diags[idx] = cur_diag_len
+    return diags
+                
+                
+def get_longest_diag_index(some):
+    diags = get_longest_diag_dict(some, some.nonzero())    
+    diags_values = list(diags.values())
+    
+    diags_keys = list(diags.keys())
+    best_diag = np.argmax(diags_values)
+    diag_start_index =  diags_keys[best_diag]
+    diag_start_length =  diags_values[best_diag]
+    return diag_start_index, diag_start_length
 
+def get_tokens_diag(prompt, prompt_plus_new_tokens):
+    compare_mat = prompt_plus_new_tokens.T == prompt
+    compare_mat_int = compare_mat.to(int)
+    longest_location, longest_diag_length = get_longest_diag_index(compare_mat_int)
+    
+    new_token_start_index = longest_location[0]+longest_diag_length
+    
+    discrep_with_old = longest_location[1]+longest_diag_length
+    replace_tokens_from_prompt = prompt[:,discrep_with_old:]
+    
+    disrep_length = (prompt.shape[1] - discrep_with_old).item()
+    
+    new_tokens_with_disrep = prompt_plus_new_tokens[:,new_token_start_index:]
+    
+    new_tokens_only = prompt_plus_new_tokens[:,new_token_start_index+disrep_length:]
+    
+    discrep_only = prompt_plus_new_tokens[:,new_token_start_index:new_token_start_index+disrep_length]
+    
+    return replace_tokens_from_prompt, disrep_length, new_tokens_with_disrep, new_tokens_only, discrep_only
 
 class AssistedCandidateGeneratorDifferentTokenizers(AssistedCandidateGenerator):
     def __init__(
@@ -228,13 +286,6 @@ class AssistedCandidateGeneratorDifferentTokenizers(AssistedCandidateGenerator):
         else:                
             # input_ids contains all target prompt input ids and some new target input ids
             if optimized and self.prev_target_ids.shape[1] > self.target_lookbehind:
-                # num_prev_target = input_ids.shape[1]
-                
-                # num_new_valid_target_tokens = num_prev_target - self.prev_target_ids.shape[1]
-
-                # number_of_tokens_until_the_new_ones = num_prev_target - num_new_valid_target_tokens
-                
-                # target_lookbehind = min(self.target_lookbehind, number_of_tokens_until_the_new_ones)
                 
                 start_index_in_target_window = self.prev_target_ids.shape[1] - self.target_lookbehind
                 
@@ -243,22 +294,23 @@ class AssistedCandidateGeneratorDifferentTokenizers(AssistedCandidateGenerator):
                 new_draft_ids = self.convert_token_ids(
                     input_ids[:,  start_index_in_target_window:], **convert_kwargs
                 )
-                new_valid_draft_ids, should_replace_past = \
-                    get_new_tokens_slide(self.prev_draft_ids, new_draft_ids, to="draft")
+
+                prompt_use = self.prev_draft_ids[:,-self.draft_lookbehind:]
+                pylog.error(f"DRAFT {prompt_use=}, {new_draft_ids=}")
                 
-                if new_valid_draft_ids is None:
-                    # need to use only previous draft tokens
-                    draft_input_ids = self.prev_draft_ids
-                else:
-                    if should_replace_past:
-                        draft_input_ids = self.prev_draft_ids
-                        draft_input_ids[:, -new_valid_draft_ids.shape[1]:] = new_valid_draft_ids
-                        remove_from_pkv = new_valid_draft_ids.shape[1]
-                    else:
-                        draft_input_ids = torch.cat([self.prev_draft_ids, new_valid_draft_ids], dim=-1)
+                replace_tokens_from_prompt, disrep_length, new_tokens_with_disrep, new_tokens_only, discrep_only = get_tokens_diag(prompt_use, new_draft_ids)
+                
+                pylog.error(f"DRAFT new tokens {new_tokens_only=}, {discrep_only=}")
+                
+                draft_input_ids = self.prev_draft_ids
+                
+                if disrep_length > 0:
+                    draft_input_ids[:, -disrep_length:] = discrep_only
+                    remove_from_pkv = disrep_length
                     
-                # new_draft_input_ids = get_only_new_tokens(new_draft_ids, prev_draft_ids_tail)
-                
+                if new_tokens_only.shape[1] > 0:
+                    draft_input_ids = torch.cat([draft_input_ids, new_tokens_only], dim=-1)
+                 
                 self.prev_draft_ids = draft_input_ids
             else:
                 draft_input_ids = self.convert_token_ids(input_ids, **convert_kwargs)
@@ -306,12 +358,26 @@ class AssistedCandidateGeneratorDifferentTokenizers(AssistedCandidateGenerator):
                 src=self.assistant_tokenizer,
                 dest=self.target_tokenizer,
             )
-            new_target_tokens_check, _ = get_new_tokens_slide(input_ids, new_target_ids_from_window, to="target")
+            # new_target_tokens_check, _ = get_new_tokens_slide(input_ids, new_target_ids_from_window, to="target")
             
-            if new_target_tokens_check is None:
-                new_target_ids = input_ids
-            else:
-                new_target_ids = torch.cat([input_ids, new_target_tokens_check], dim=-1)
+            # if new_target_tokens_check is None:
+            #     new_target_ids = input_ids
+            # else:
+            #     new_target_ids = torch.cat([input_ids, new_target_tokens_check], dim=-1)
+                
+            # self.prev_target_ids = input_ids
+            target_prompt_use = input_ids[:,-self.target_lookbehind:]
+            
+            pylog.error(f"TARGET {target_prompt_use=}, {new_target_ids_from_window=}")
+                
+            tar_replace_tokens_from_prompt, tar_disrep_length, tar_new_tokens_with_disrep, tar_new_tokens_only, tar_discrep_only = get_tokens_diag(target_prompt_use, new_target_ids_from_window)
+            
+            pylog.error(f"TARGET new tokens {tar_new_tokens_only=}")
+                
+            new_target_ids = input_ids
+                
+            if tar_new_tokens_only.shape[1] > 0:
+                new_target_ids = torch.cat([new_target_ids, tar_new_tokens_only], dim=-1)
                 
             self.prev_target_ids = input_ids
         else:
