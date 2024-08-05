@@ -305,7 +305,14 @@ class AssistedCandidateGeneratorDifferentTokenizers(AssistedCandidateGenerator):
                 draft_input_ids = self.prev_draft_ids
                 
                 if disrep_length > 0:
-                    draft_input_ids[:, -disrep_length:] = discrep_only
+                    if disrep_length == discrep_only.shape[1]:
+                        draft_input_ids[:, -disrep_length:] = discrep_only
+                        
+                    elif disrep_length > discrep_only.shape[1]:
+                        disrep_length_diff = disrep_length - discrep_only.shape[1]
+                        draft_input_ids = draft_input_ids[:, :-disrep_length_diff]
+                        draft_input_ids[:, -discrep_only.shape[1]:] = discrep_only
+                        
                     remove_from_pkv = disrep_length
                     
                 if new_tokens_only.shape[1] > 0:
