@@ -129,7 +129,7 @@ NEED_SETUP_CACHE_CLASSES_MAPPING = {
 }
 QUANT_BACKEND_CLASSES_MAPPING = {"quanto": QuantoQuantizedCache, "HQQ": HQQQuantizedCache}
 
-DEBUG = os.environ.get("DEBUG", None) is not None
+DEBUG = os.environ.get("DEBUG") == "1"
 
 class TokenSlideError(Exception):
     def __init__(self, full_seq_prompt, new_d, d_agree_sum, d_agree_sum_max, 
@@ -259,16 +259,14 @@ class AssistedCandidateGeneratorDifferentTokenizers(AssistedCandidateGenerator):
         model_kwargs: Dict,
         inputs_tensor: Optional[torch.Tensor] = None,
         logits_processor: "LogitsProcessorList" = None,
-        assistant_tokenizer: Optional[Union[PreTrainedTokenizer, "PreTrainedTokenizerFast"]] = None,
-        target_tokenizer: Optional[Union[PreTrainedTokenizer, "PreTrainedTokenizerFast"]] = None,
     ):
         super().__init__(input_ids, assistant_model, generation_config, model_kwargs, inputs_tensor, logits_processor)
         
-        self.assistant_tokenizer = assistant_tokenizer
-        self.target_tokenizer = target_tokenizer
+        self.assistant_tokenizer = generation_config.assistant_tokenizer
+        self.target_tokenizer = generation_config.target_tokenizer
         self.prev_tokens = None
-        self.target_lookbehind = 50
-        self.draft_lookbehind = 50
+        self.target_lookbehind = generation_config.target_lookbehind
+        self.draft_lookbehind = generation_config.draft_lookbehind
         self.token_conversions = []
         
     def convert_token_ids(
@@ -341,7 +339,7 @@ class AssistedCandidateGeneratorDifferentTokenizers(AssistedCandidateGenerator):
                 self.prev_draft_ids = draft_input_ids
             else:
                 draft_input_ids = self.convert_token_ids(input_ids, **convert_kwargs)
-                # draft_input_ids = torch.cat([self.prev_draft_ids, draft_input_ids[:, self.prev_draft_ids.shape[1]:]], dim=1)
+                draft_input_ids = torch.cat([self.prev_draft_ids, draft_input_ids[:, self.prev_draft_ids.shape[1]:]], dim=1)
 
             new_cur_len = draft_input_ids.shape[-1]
         
@@ -1035,8 +1033,6 @@ class GenerationMixin:
         assistant_model: "PreTrainedModel",
         logits_processor,
         model_kwargs: Dict,
-        assistant_tokenizer,
-        target_tokenizer,
     ) -> CandidateGenerator:
         """
         Returns the candidate generator to be used in `assisted_generation`
@@ -1057,8 +1053,6 @@ class GenerationMixin:
                 model_kwargs=model_kwargs,
                 inputs_tensor=inputs_tensor,
                 logits_processor=logits_processor,
-                assistant_tokenizer=assistant_tokenizer,
-                target_tokenizer=target_tokenizer,
             )
         else:
             candidate_generator = AssistedCandidateGenerator(
@@ -1070,39 +1064,6 @@ class GenerationMixin:
                 logits_processor=logits_processor,
             )
         return candidate_generator
-    
-    # def _get_candidate_generator(
-    #     self,
-    #     generation_config: GenerationConfig,
-    #     input_ids: torch.LongTensor,
-    #     inputs_tensor: torch.Tensor,
-    #     assistant_model: "PreTrainedModel",
-    #     logits_processor: LogitsProcessorList,
-    #     model_kwargs: Dict,
-    #     assistant_tokenizer: Optional[Union[PreTrainedTokenizer, "PreTrainedTokenizerFast"]] = None,
-    #     target_tokenizer: Optional[Union[PreTrainedTokenizer, "PreTrainedTokenizerFast"]] = None,
-    # ) -> CandidateGenerator:
-    #     """
-    #     Returns the candidate generator to be used in `assisted_generation`
-    #     """
-    #     if generation_config.prompt_lookup_num_tokens is not None:
-    #         candidate_generator = PromptLookupCandidateGenerator(
-    #             num_output_tokens=generation_config.prompt_lookup_num_tokens,
-    #             max_matching_ngram_size=generation_config.max_matching_ngram_size,
-    #             max_length=generation_config.max_length,
-    #         )
-    #     else:
-    #         candidate_generator = AssistedCandidateGenerator(
-    #             input_ids=input_ids,
-    #             assistant_model=assistant_model,
-    #             assistant_tokenizer=assistant_tokenizer,
-    #             target_tokenizer=target_tokenizer,
-    #             generation_config=generation_config,
-    #             model_kwargs=model_kwargs,
-    #             inputs_tensor=inputs_tensor,
-    #             logits_processor=logits_processor,
-    #         )
-    #     return candidate_generator
 
     def _get_logits_warper(
         self,
@@ -1535,7 +1496,7 @@ class GenerationMixin:
                 exception_message += f" Please use one of the following classes instead: {generate_compatible_classes}"
             raise TypeError(exception_message)
 
-    def _validate_assistant(self, assistant_model, assistant_tokenizer, target_tokenizer):
+    def _validate_assistant(self, assistant_model):
         if assistant_model is None:
             return
 
@@ -1553,7 +1514,7 @@ class GenerationMixin:
 
         if (
             self.config.vocab_size != assistant_model.config.vocab_size
-            and assistant_tokenizer is None
+            and self.generation_config.assistant_tokenizer is None
         ):
             raise ValueError(
                 "Make sure the main and assistant model use the same tokenizer, or, "
@@ -1943,8 +1904,6 @@ class GenerationMixin:
         prefix_allowed_tokens_fn: Optional[Callable[[int, torch.Tensor], List[int]]] = None,
         synced_gpus: Optional[bool] = None,
         assistant_model: Optional["PreTrainedModel"] = None,
-        assistant_tokenizer: Optional[Union[str, PreTrainedTokenizer, "PreTrainedTokenizerFast"]] = None,
-        target_tokenizer: Optional[Union[str, PreTrainedTokenizer, "PreTrainedTokenizerFast"]] = None,
         streamer: Optional["BaseStreamer"] = None,
         negative_prompt_ids: Optional[torch.Tensor] = None,
         negative_prompt_attention_mask: Optional[torch.Tensor] = None,
@@ -2008,6 +1967,10 @@ class GenerationMixin:
                 The matching tokenizer for the target model, in case this tokenizer differs from the assistant tokenizer.
             assistant_tokenizer (`PreTrainedTokenizer`, *optional*):
                 The matching tokenizer for the asisstant model, in case this tokenizer differs from the target tokenizer.
+            target_lookbehind (int, *optional*):
+                The target lookbehind to use for assistant generation with different tokenizers.
+            draft_lookbehind (int, *optional*):
+                The target lookbehind to use for assistant generation with different tokenizers.
             streamer (`BaseStreamer`, *optional*):
                 Streamer object that will be used to stream the generated sequences. Generated tokens are passed
                 through `streamer.put(token_ids)` and the streamer is responsible for any further processing.
@@ -2042,7 +2005,7 @@ class GenerationMixin:
         tokenizer = kwargs.pop("tokenizer", None)  # Pull this out first, we only use it for stopping criteria
         generation_config, model_kwargs = self._prepare_generation_config(generation_config, **kwargs)
         self._validate_model_kwargs(model_kwargs.copy())
-        self._validate_assistant(assistant_model, assistant_tokenizer, target_tokenizer)
+        self._validate_assistant(assistant_model)
 
         # 2. Set generation parameters if not already defined
         if synced_gpus is None:
@@ -2270,8 +2233,6 @@ class GenerationMixin:
                 assistant_model=assistant_model,
                 logits_processor=logits_processor,
                 model_kwargs=model_kwargs,
-                assistant_tokenizer=assistant_tokenizer,
-                target_tokenizer=target_tokenizer,
             )
 
             # 12. prepare logits warper (if `do_sample` is `True`)

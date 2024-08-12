@@ -416,6 +416,8 @@ class GenerationConfig(PushToHubMixin):
         self.num_assistant_tokens_schedule = kwargs.pop("num_assistant_tokens_schedule", "heuristic")
         self.target_tokenizer = kwargs.pop("target_tokenizer", None)
         self.assistant_tokenizer = kwargs.pop("assistant_tokenizer", None)
+        self.target_lookbehind = kwargs.pop("target_lookbehind", None)
+        self.draft_lookbehind = kwargs.pop("draft_lookbehind", None)
         
         # DoLa generation
         self.dola_layers = kwargs.pop("dola_layers", None)
@@ -1145,6 +1147,8 @@ class GenerationConfig(PushToHubMixin):
         config_dict = convert_keys_to_string(config_dict)
         config_dict = convert_dataclass_to_dict(config_dict)
 
+        config_dict["assistant_tokenizer"] = self.assistant_tokenizer.__class__.__name__ if self.assistant_tokenizer else None
+        config_dict["target_tokenizer"] = self.target_tokenizer.__class__.__name__ if self.target_tokenizer else None
         return json.dumps(config_dict, indent=2, sort_keys=True) + "\n"
 
     def to_json_file(self, json_file_path: Union[str, os.PathLike], use_diff: bool = True):
