@@ -309,7 +309,6 @@ class AssistedCandidateGeneratorDifferentTokenizers(AssistedCandidateGenerator):
                 prompt_use_length = new_draft_ids.shape[1]
                 prompt_use = self.prev_draft_ids[:,-prompt_use_length:]
                 
-                
                 if DEBUG:
                     log(f"DRAFT {prompt_use=}, {new_draft_ids=}")
                 
@@ -342,6 +341,7 @@ class AssistedCandidateGeneratorDifferentTokenizers(AssistedCandidateGenerator):
                 self.prev_draft_ids = draft_input_ids
             else:
                 draft_input_ids = self.convert_token_ids(input_ids, **convert_kwargs)
+                # draft_input_ids = torch.cat([self.prev_draft_ids, draft_input_ids[:, self.prev_draft_ids.shape[1]:]], dim=1)
 
             new_cur_len = draft_input_ids.shape[-1]
         
