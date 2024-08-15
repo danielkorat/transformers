@@ -307,13 +307,13 @@ class AssistedCandidateGeneratorDifferentTokenizers(AssistedCandidateGenerator):
                 prompt_use_length = new_draft_ids.shape[1]
                 prompt_use = self.prev_draft_ids[:,-prompt_use_length:]
                 
-                if DEBUG:
-                    log(f"DRAFT {prompt_use=}, {new_draft_ids=}")
+                # if DEBUG:
+                #     log(f"DRAFT {prompt_use=}, {new_draft_ids=}")
                 
                 replace_tokens_from_prompt, disrep_length, new_tokens_with_disrep, new_tokens_only, discrep_only = get_tokens_diag(prompt_use, new_draft_ids)
                 
-                if DEBUG:
-                    log(f"DRAFT new tokens {new_tokens_only=}, {discrep_only=}")
+                # if DEBUG:
+                #     log(f"DRAFT new tokens {new_tokens_only=}, {discrep_only=}")
                 
                 draft_input_ids = self.prev_draft_ids
                 
@@ -343,8 +343,8 @@ class AssistedCandidateGeneratorDifferentTokenizers(AssistedCandidateGenerator):
 
             new_cur_len = draft_input_ids.shape[-1]
         
-        if DEBUG:
-            log(f"self.num_assistant_tokens: {self.num_assistant_tokens}")
+        # if DEBUG:
+        #     log(f"self.num_assistant_tokens: {self.num_assistant_tokens}")
         max_new_tokens = int(self.num_assistant_tokens)
     
         min_new_tokens = max(min(max_new_tokens, self.main_model_min_length - new_cur_len), 0)
@@ -377,10 +377,10 @@ class AssistedCandidateGeneratorDifferentTokenizers(AssistedCandidateGenerator):
         self.assistant_kwargs.pop("attention_mask", None)
         assistant_output = self.assistant_model.generate(**assistant_generation_kwargs, **self.assistant_kwargs)
         
-        if DEBUG:
-            log(f"DRAFT INPUT IDS: {draft_input_ids.shape=} {draft_input_ids=}")
-            log(f"assistant_output: {assistant_output.sequences.shape=} {assistant_output.sequences=}")
-            log(f"max_new_tokens: {max_new_tokens=}, min_new_tokens: {min_new_tokens=}")
+        # if DEBUG:
+        #     log(f"DRAFT INPUT IDS: {draft_input_ids.shape=} {draft_input_ids=}")
+        #     log(f"assistant_output: {assistant_output.sequences.shape=} {assistant_output.sequences=}")
+        #     log(f"max_new_tokens: {max_new_tokens=}, min_new_tokens: {min_new_tokens=}")
 
         num_prev_draft = self.prev_draft_ids.shape[1]
         start_draft_look_index = num_prev_draft - self.draft_lookbehind
@@ -397,9 +397,9 @@ class AssistedCandidateGeneratorDifferentTokenizers(AssistedCandidateGenerator):
             
             tar_replace_tokens_from_prompt, tar_disrep_length, tar_new_tokens_with_disrep, tar_new_tokens_only, tar_discrep_only = get_tokens_diag(target_prompt_use, new_target_ids_from_window)
             
-            if DEBUG:
-                log(f"TARGET {target_prompt_use=}, {new_target_ids_from_window=}")
-                log(f"TARGET new tokens {tar_new_tokens_only=}")
+            # if DEBUG:
+            #     log(f"TARGET {target_prompt_use=}, {new_target_ids_from_window=}")
+            #     log(f"TARGET new tokens {tar_new_tokens_only=}")
             
             new_target_ids = input_ids
             
