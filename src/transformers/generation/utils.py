@@ -185,7 +185,7 @@ def get_new_tokens_slide(full_seq_prompt, new_d, to="target"):
     
     # Second return value detrmines if we should override the prev_token_ids
     return new_d[:,-d_agree_sum_index:], False
-import numpy as np
+
 def get_longest_diag_dict(some, some_nonzero):
     visited = set()
     diags = {}
