@@ -4284,6 +4284,13 @@ class GenerationMixin:
                 candidate_new_tokens = candidate_input_ids[:, cur_len:]
                 n_matches = ((~(candidate_new_tokens == selected_tokens[:, :-1])).cumsum(dim=-1) < 1).sum()
 
+                self.ar_list.append(
+                    {
+                        "n_matches": n_matches.item(),
+                        "cand_count": new_logits.shape[1] - 1,
+                    }
+                )
+                    
                 # Ensure we don't generate beyond max_len or an EOS token
                 if is_done_candidate and n_matches == candidate_length:
                     n_matches -= 1
