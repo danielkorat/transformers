@@ -847,6 +847,7 @@ class GenerationMixin:
                 generation_config=generation_config,
                 model_kwargs=model_kwargs,
                 inputs_tensor=inputs_tensor,
+                tokenizer=target_tokenizer,
                 logits_processor=logits_processor,
             )
         return candidate_generator

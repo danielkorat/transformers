@@ -100,6 +100,7 @@ class AssistedCandidateGenerator(CandidateGenerator):
         model_kwargs: Dict,
         inputs_tensor: Optional[torch.Tensor] = None,
         logits_processor: "LogitsProcessorList" = None,
+        tokenizer: "PreTrainedTokenizerBase" = None,
     ):
         # Make sure all data at the same device as assistant model
         device = assistant_model.device
@@ -111,7 +112,8 @@ class AssistedCandidateGenerator(CandidateGenerator):
         self.assistant_model = assistant_model
         self.num_assistant_tokens = assistant_model.generation_config.num_assistant_tokens
         self.assistant_confidence_threshold = assistant_model.generation_config.assistant_confidence_threshold
-
+        self.tokenizer = tokenizer
+        
         # Set eos in assistant same as in target model
         self.assistant_model.generation_config.eos_token_id = generation_config.eos_token_id
 
@@ -224,7 +226,8 @@ class AssistedCandidateGenerator(CandidateGenerator):
             "generation_config": self.generation_config,
             "logits_processor": self.logits_processor,
         }
-
+        
+        self.assistant_kwargs["tokenizer"] = self.tokenizer
         assistant_output = self.assistant_model.generate(**assistant_generation_kwargs, **self.assistant_kwargs)
 
         # 3. Update variables for the next round of candidate generation
@@ -514,7 +517,8 @@ class AssistedCandidateGeneratorDifferentTokenizers(AssistedCandidateGenerator):
         }
 
         self.assistant_kwargs.pop("attention_mask", None)
-
+        self.assistant_kwargs["tokenizer"] = self.assistant_tokenizer
+        
         assistant_output = self.assistant_model.generate(**assistant_generation_kwargs, **self.assistant_kwargs)
 
         num_prev_assistant = self.prev_assistant_ids.shape[1]

@@ -113,7 +113,7 @@ class TransformersEngine:
         output = self.pipeline(
             messages,
             stop_strings=stop_sequences,
-            max_length=1500,
+            max_length=3000,
             tokenizer=self.pipeline.tokenizer,
         )
 
